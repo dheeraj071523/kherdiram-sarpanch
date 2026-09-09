@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>प्रभु दयाल कुमावत | सरपंच पद के उम्मीदवार - ग्राम पंचायत खेड़ीराम</title>
+<meta name="description" content="प्रभु दयाल कुमावत - ग्राम पंचायत खेड़ीराम सरपंच पद के उम्मीदवार। मेरा संकल्प - मेरा वादा। खेड़ीराम का विकास, हमारा विश्वास।">
+<meta name="theme-color" content="#991B1B">
+
+<!-- ============================================================
+     CRITICAL SPLASH CSS — intentionally placed BEFORE the Tailwind
+     CDN <script> below and written in plain CSS (no Tailwind classes)
+     so the branded splash screen paints instantly and full-screen,
+     even while Tailwind is still downloading on a slow connection.
+     ============================================================ -->
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: #8C1523; }
+  #splashScreen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(150deg, #B31E2E 0%, #8C1523 45%, #14110F 100%);
+    transition: opacity .6s ease, visibility .6s ease;
+    padding: 24px; box-sizing: border-box; text-align: center;
+    font-family: Arial, "Noto Sans Devanagari", sans-serif;
+  }
+  #splashScreen.splash-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  #splashScreen .mesh-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+  #splashScreen .blob { position: absolute; border-radius: 999px; filter: blur(70px); opacity: .55; }
+  #splashScreen .blob-gold { width: 240px; height: 240px; background: #E08E1E; top: -40px; left: -40px; }
+  #splashScreen .blob-leaf { width: 260px; height: 260px; background: #0F9D58; bottom: -60px; right: -40px; }
+  #splashScreen .splash-photo-frame {
+    position: relative; z-index: 1;
+    width: 150px; height: 190px; border-radius: 28px; padding: 6px; margin-bottom: 20px;
+    background: conic-gradient(from 180deg, #E08E1E, #B31E2E, #0F9D58, #F5B94A, #E08E1E);
+    box-shadow: 0 25px 60px -20px rgba(0,0,0,0.6);
+    animation: splashPop .7s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  #splashScreen .splash-photo-frame img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 24px; display: block; background: #eee;
+  }
+  #splashScreen h1 {
+    position: relative; z-index: 1; color: #fff; font-family: "Tiro Devanagari Hindi", Arial, serif;
+    font-size: 1.5rem; margin: 0 0 4px; line-height: 1.3;
+  }
+  #splashScreen p {
+    position: relative; z-index: 1; color: #F5B94A; font-size: .95rem; margin: 0; font-weight: 600;
+  }
+  #splashScreen .splash-bar {
+    position: relative; z-index: 1; margin-top: 28px; width: 160px; height: 6px; border-radius: 999px;
+    background: rgba(255,255,255,.18); overflow: hidden;
+  }
+  #splashScreen .splash-bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #E08E1E, #F5B94A, #fff);
+    animation: loadBar 1.7s ease-in-out forwards;
+  }
+  @keyframes splashPop { 0% { opacity: 0; transform: scale(.75) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes loadBar { 0% { width: 0%; } 100% { width: 100%; } }
+  @media (prefers-reduced-motion: reduce) {
+    #splashScreen .splash-photo-frame { animation: none; }
+    #splashScreen .splash-bar-fill { animation: none; width: 100%; }
+  }
+</style>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="candidate-logo.png">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          crimson: { DEFAULT: '#B31E2E', dark: '#8C1523', light: '#E14559' },
+          gold: { DEFAULT: '#E08E1E', light: '#F5B94A', dark: '#B36F0F' },
+          leaf: { DEFAULT: '#0F9D58', dark: '#0B7A44' },
+          cream: '#FFFBF5',
+          ink: '#1E1B18'
+        },
+        fontFamily: {
+          heading: ['"Tiro Devanagari Hindi"', 'serif'],
+          body: ['"Hind"', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Hind', sans-serif; background-color: #FFFBF5; color: #1E1B18; }
+  h1, h2, h3, .font-heading { font-family: 'Tiro Devanagari Hindi', serif; }
+
+  /* ---------- Mesh gradient hero backdrop ---------- */
+  .mesh-bg {
+    position: absolute; inset: 0; overflow: hidden; z-index: 0;
+  }
+  .blob {
+    position: absolute; border-radius: 999px; filter: blur(70px); opacity: 0.45;
+  }
+  @media (max-width: 640px) {
+    .blob { opacity: 0.22; filter: blur(50px); }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .blob-float { animation: blobFloat 9s ease-in-out infinite; }
+    .blob-float-slow { animation: blobFloat 13s ease-in-out infinite; }
+  }
+  @keyframes blobFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(18px,-22px) scale(1.08); }
+  }
+
+  /* ---------- Gradient text ---------- */
+  .grad-text {
+    background: linear-gradient(90deg, #B31E2E 0%, #E08E1E 55%, #0F9D58 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- Gradient-border card (Gen Z bento style) ---------- */
+  .grad-card {
+    position: relative;
+    border-radius: 1.5rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(179,30,46,0.35), rgba(224,142,30,0.35), rgba(15,157,88,0.35));
+  }
+  .grad-card > div {
+    border-radius: calc(1.5rem - 1px);
+    background: #FFFFFF;
+    height: 100%;
+  }
+
+  /* ---------- Glass navbar ---------- */
+  .nav-glass {
+    background: rgba(255,251,245,0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* ---------- Glowing candidate photo frame ---------- */
+  .photo-frame {
+    position: relative;
+    border-radius: 2rem;
+    padding: 6px;
+    background: conic-gradient(from 180deg, #E08E1E, #B31E2E, #0F9D58, #F5B94A, #E08E1E);
+    box-shadow: 0 25px 60px -20px rgba(179,30,46,0.45);
+  }
+  .photo-frame img {
+    border-radius: 1.7rem;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #eee;
+  }
+
+  /* ---------- Numbered badge (gradient chip) ---------- */
+  .num-chip {
+    min-width: 2.75rem; height: 2.75rem;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    box-shadow: 0 8px 18px -6px var(--c1);
+  }
+
+  /* ---------- Sankalp accordion ---------- */
+  #sankalpList {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows .5s ease, opacity .4s ease;
+  }
+  #sankalpList.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  #sankalpList > div { overflow: hidden; }
+
+  #sankalpChevron { transition: transform .35s ease; }
+  #sankalpToggle[aria-expanded="true"] #sankalpChevron { transform: rotate(180deg); }
+
+  /* ---------- Buttons ---------- */
+  .btn-shine { position: relative; overflow: hidden; }
+  .btn-shine::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+    transform: skewX(-20deg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn-shine::after { animation: shine 3.4s ease-in-out infinite; }
+  }
+  @keyframes shine { 0% { left: -60%; } 35% { left: 130%; } 100% { left: 130%; } }
+
+  .skip-link { transform: translateY(-150%); transition: transform .2s ease; }
+  .skip-link:focus { transform: translateY(0); }
+
+  a:focus-visible, button:focus-visible { outline: 3px solid #E08E1E; outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+  }
+
+  @media (max-width: 767px) { body { padding-bottom: 4.75rem; } }
+</style>
+</head>
+<body>
+
+<!-- ============ SPLASH SCREEN (shows candidate photo first, full-screen, instantly) ============ -->
+<div id="splashScreen">
+  <div class="mesh-bg">
+    <div class="blob blob-gold"></div>
+    <div class="blob blob-leaf"></div>
+  </div>
+  <div class="splash-photo-frame">
+    <img src="candidate-photo.jpg" alt="प्रभु दयाल कुमावत">
+  </div>
+  <h1>प्रभु दयाल कुमावत</h1>
+  <p>सरपंच पद के उम्मीदवार</p>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<a href="#main" class="skip-link fixed top-2 left-2 z-[100] bg-ink text-white px-4 py-2 rounded-lg text-sm">मुख्य सामग्री पर जाएं</a>
+
+<!-- ============ TOP ANNOUNCEMENT STRIP ============ -->
+<div class="bg-gradient-to-r from-leaf-dark via-leaf to-leaf-dark text-white text-sm">
+  <div class="max-w-6xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center">
+    <i class="fa-solid fa-bullhorn"></i>
+    <p class="font-medium">मेरा संकल्प - मेरा वादा &nbsp;|&nbsp; खेड़ीराम का विकास, हमारा विश्वास</p>
+  </div>
+</div>
+
+<!-- ============ STICKY NAVBAR ============ -->
+<nav class="sticky top-0 z-40 nav-glass border-b border-ink/5">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="#main" class="flex items-center gap-3">
+      <img src="candidate-logo.png" alt="प्रभु दयाल कुमावत - अभियान लोगो" class="w-11 h-11 rounded-full ring-2 ring-gold object-cover bg-ink/5" onerror="this.style.display='none'">
+      <div class="leading-tight">
+        <p class="font-heading text-lg text-ink">प्रभु दयाल कुमावत</p>
+        <p class="text-xs text-crimson font-semibold -mt-0.5">सरपंच पद के उम्मीदवार</p>
+      </div>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm font-semibold text-ink/70">
+      <a href="#main" class="hover:text-crimson transition-colors">होम</a>
+      <a href="#sankalp" class="hover:text-crimson transition-colors">मेरे संकल्प</a>
+      <a href="#samarthan" class="hover:text-crimson transition-colors">जुड़ें</a>
+      <a href="#samarthan" class="inline-flex items-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-2.5 rounded-full shadow-lg shadow-crimson/25 hover:shadow-crimson/40 transition-shadow">
+        <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
+      </a>
+    </div>
+    <button onclick="shareWhatsApp()" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-leaf text-white">
+      <i class="fa-brands fa-whatsapp text-lg"></i>
+    </button>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="relative overflow-hidden">
+    <div class="mesh-bg">
+      <div class="blob w-56 h-56 sm:w-96 sm:h-96 bg-crimson -top-16 -left-10 sm:-top-20 sm:-left-16"></div>
+      <div class="blob w-64 h-64 sm:w-[26rem] sm:h-[26rem] bg-gold top-6 right-[-4rem] sm:top-10 sm:right-[-6rem]"></div>
+      <div class="blob w-52 h-52 sm:w-80 sm:h-80 bg-leaf bottom-[-3rem] left-1/3 sm:bottom-[-6rem]"></div>
+    </div>
+
+    <div class="relative max-w-6xl mx-auto px-4 py-14 sm:py-20 grid md:grid-cols-2 gap-10 items-center">
+      <div class="flex justify-center order-1 md:order-none">
+        <div class="photo-frame w-64 h-80 sm:w-80 sm:h-96">
+          <img src="candidate-photo.jpg" alt="प्रभु दयाल कुमावत की तस्वीर" onerror="this.src='https://via.placeholder.com/400x480/B31E2E/FFFBF5?text=प्रभु+दयाल+कुमावत'">
+        </div>
+      </div>
+
+      <div class="text-center md:text-right">
+        <span class="inline-block bg-gradient-to-r from-crimson via-gold to-leaf text-white text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full mb-3 shadow-md">मिशन सरपंच 2026</span>
+        <h1 class="font-heading text-4xl sm:text-6xl leading-tight mb-1 text-ink">प्रभु दयाल कुमावत</h1>
+        <div class="h-1.5 w-24 rounded-full bg-gradient-to-r from-crimson via-gold to-leaf mx-auto md:ml-auto md:mr-0 mb-3"></div>
+        <p class="font-heading text-xl sm:text-2xl text-ink/80 mb-5">सरपंच पद के उम्मीदवार — ग्राम पंचायत खेड़ीराम</p>
+
+        <div class="grad-card mb-6 text-right">
+          <div class="p-5">
+            <p class="text-ink/85 text-base sm:text-lg leading-relaxed">"सरकारी योजनाओं को कागज़ों तक सीमित नहीं रहने देना, बल्कि पात्र लाभार्थियों तक उनका वास्तविक लाभ पहुँचाने के लिए पूरी जिम्मेदारी और ईमानदारी से प्रयास करना मेरा कर्तव्य है।"</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row md:justify-end gap-3">
+          <a href="#sankalp" class="btn-shine inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson to-crimson-dark text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-crimson/30 hover:-translate-y-0.5 transition-transform">
+            <i class="fa-solid fa-list-check"></i> 24 विकास संकल्प देखें
+          </a>
+          <button onclick="shareWhatsApp()" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-leaf to-leaf-dark text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-leaf/30 hover:-translate-y-0.5 transition-transform">
+            <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp पर शेयर करें
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 24 SANKALP (ACCORDION) ============ -->
+  <section id="sankalp" class="relative max-w-6xl mx-auto px-4 py-14 sm:py-20 scroll-mt-20">
+    <div class="mesh-bg opacity-30 -z-10">
+      <div class="blob w-72 h-72 bg-gold top-0 right-0"></div>
+      <div class="blob w-64 h-64 bg-leaf bottom-0 left-0"></div>
+    </div>
+    <button id="sankalpToggle" onclick="toggleSankalp()" aria-expanded="false" aria-controls="sankalpList"
+      class="w-full grad-card text-right group">
+      <div class="p-5 sm:p-6 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="font-heading text-2xl sm:text-4xl text-ink mb-1">मेरे 24 विकास संकल्प</h2>
+          <p class="text-ink/55 text-sm sm:text-base">देखने के लिए यहाँ क्लिक करें — सूची खोलें / बंद करें</p>
+        </div>
+        <span class="flex-shrink-0 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-crimson via-gold to-leaf flex items-center justify-center text-white shadow-lg">
+          <i id="sankalpChevron" class="fa-solid fa-chevron-down text-lg sm:text-xl"></i>
+        </span>
+      </div>
+    </button>
+
+    <div id="sankalpList">
+      <div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 pt-6">
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">1</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-road text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">सड़क निर्माण एवं नए पक्के रास्तों का निर्माण</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">2</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-heart-pulse text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">स्वास्थ्य सुविधाओं का विस्तार</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">3</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-droplet text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">हर घर तक स्वच्छ पेयजल की व्यवस्था</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">4</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-book-open text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">शिक्षा का विकास – कन्या पाठशाला एवं लाइब्रेरी</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">5</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-house-chimney text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">पुनर्निर्माण एवं ग्राम विकास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">6</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-broom text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">सफाई व्यवस्था एवं नालियों का निर्माण</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">7</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-route text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">नए रास्तों का निर्माण जहां रास्ता उपलब्ध नहीं है</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">8</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-trophy text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">क्रिकेट मैदान एवं खेल सुविधाओं का विकास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">9</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-building-columns text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">अटल सेवा केंद्र की सुविधा</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">10</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-lightbulb text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">रोड लाइट की व्यवस्था</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">11</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-shield-halved text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">पुलिस चौकी की सुविधा के लिए प्रयास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">12</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-money-bill-wave text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">मिनी बैंक एवं ATM सुविधा के लिए प्रयास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">13</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-ban text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">नशा मुक्ति केंद्र की सुविधा</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">14</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-user-shield text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">नारी सम्मान एवं सुरक्षा</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">15</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-hand-holding-dollar text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">गरीबी उन्मूलन एवं आर्थिक सुधार के लिए प्रयास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">16</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-briefcase text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">स्थानीय रोजगार के अवसर बढ़ाना</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">17</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-people-roof text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">हर ग्राम में सामुदायिक भवन</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">18</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-om text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">मंदिरों का सुधार एवं विकास</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">19</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-person-cane text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">वृद्धावस्था पेंशन सुचारु रूप से चालू करवाने में सहायता</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">20</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-hands-holding-child text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">विधवा पेंशन सुचारु रूप से चालू करवाने में सहायता</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">21</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-wheelchair text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">दिव्यांग पेंशन सुचारु रूप से चालू करवाने में सहायता</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#B31E2E;--c2:#E14559">22</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-id-card text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">BPL योजनाओं का वास्तविक पात्र लाभार्थियों तक लाभ पहुँचाना</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#0F9D58;--c2:#0B7A44">23</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-wheat-awn text-gold text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">खाद्य/गेहूं योजना का सुचारु संचालन सुनिश्चित करने में सहायता</p></div>
+          </div></article>
+
+          <article class="grad-card"><div class="p-4 flex items-start gap-3 hover:-translate-y-1 transition-transform">
+            <span class="num-chip flex items-center justify-center rounded-2xl text-white font-bold text-lg" style="--c1:#E08E1E;--c2:#F5B94A">24</span>
+            <div class="flex items-start gap-2.5 pt-0.5"><i class="fa-solid fa-file-circle-check text-crimson text-xl mt-0.5"></i><p class="text-ink/90 leading-snug">सरकार की सभी जनकल्याणकारी योजनाओं की जानकारी और पात्र लाभार्थियों तक उनका लाभ पहुँचाना</p></div>
+          </div></article>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MERA VACHAN BANNER ============ -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-ink via-leaf-dark to-ink">
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 15% 30%, #E08E1E 0, transparent 30%), radial-gradient(circle at 85% 70%, #B31E2E 0, transparent 30%);"></div>
+    <div class="relative max-w-4xl mx-auto px-6 py-12 text-center">
+      <p class="font-heading text-2xl sm:text-3xl mb-3 text-gold-light">मेरा वचन</p>
+      <p class="text-white/95 text-lg leading-relaxed">सरकारी योजनाओं को कागज़ों तक सीमित नहीं रहने देना, बल्कि पात्र लाभार्थियों तक उनका वास्तविक लाभ पहुँचाने के लिए पूरी जिम्मेदारी और ईमानदारी से प्रयास करना मेरा कर्तव्य है।</p>
+      <p class="text-gold-light font-heading text-lg mt-5">— प्रभु दयाल कुमावत</p>
+    </div>
+  </section>
+
+  <!-- ============ SOCIAL / CONNECT ============ -->
+  <section class="max-w-4xl mx-auto px-4 py-14 text-center">
+    <h2 class="font-heading text-2xl sm:text-3xl text-ink mb-2">अभियान से जुड़ें</h2>
+    <p class="text-ink/55 mb-8">नवीनतम जानकारी और अपडेट के लिए हमारे साथ जुड़े रहें</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="https://chat.whatsapp.com/LtJxVfvK2Zk6vEQYxht3gP" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-gradient-to-r from-leaf to-leaf-dark text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-leaf/25 hover:-translate-y-0.5 transition-transform">
+        <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp ग्रुप जॉइन करें
+      </a>
+      <!-- data-social="instagram": update href when the account is ready -->
+      <a href="#" data-social="instagram" class="inline-flex items-center gap-2 bg-ink/8 text-ink/40 px-6 py-3 rounded-2xl font-semibold cursor-not-allowed" aria-disabled="true" title="जल्द उपलब्ध">
+        <i class="fa-brands fa-instagram text-lg"></i> Instagram (जल्द)
+      </a>
+      <!-- data-social="facebook": update href when the account is ready -->
+      <a href="#" data-social="facebook" class="inline-flex items-center gap-2 bg-ink/8 text-ink/40 px-6 py-3 rounded-2xl font-semibold cursor-not-allowed" aria-disabled="true" title="जल्द उपलब्ध">
+        <i class="fa-brands fa-facebook text-lg"></i> Facebook (जल्द)
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CAMPAIGN SUPPORT / VOLUNTEER FORM ============ -->
+  <section id="samarthan" class="max-w-2xl mx-auto px-4 py-14 sm:py-20 scroll-mt-20">
+    <div class="text-center mb-8">
+      <h2 class="font-heading text-3xl text-ink mb-2">चुनाव प्रचार में हमारे साथ जुड़ें</h2>
+      <p class="text-ink/55">अपना समर्थन दर्ज करें, वालंटियर बनें या अपने वार्ड की जानकारी साझा करें — टीम जल्द संपर्क करेगी</p>
+    </div>
+
+    <div class="grad-card">
+      <form id="grievanceForm" class="p-6 sm:p-8 space-y-4">
+        <div>
+          <label for="fullName" class="block text-sm font-semibold text-ink/80 mb-1.5">पूरा नाम</label>
+          <input type="text" id="fullName" name="fullName" required
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" placeholder="अपना नाम लिखें">
+        </div>
+
+        <div>
+          <label for="phone" class="block text-sm font-semibold text-ink/80 mb-1.5">मोबाइल नंबर</label>
+          <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}" maxlength="10"
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" placeholder="10 अंकों का मोबाइल नंबर">
+        </div>
+
+        <div>
+          <label for="ward" class="block text-sm font-semibold text-ink/80 mb-1.5">वार्ड नंबर</label>
+          <input type="text" id="ward" name="ward"
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" placeholder="वार्ड नंबर (यदि ज्ञात हो)">
+        </div>
+
+        <div>
+          <label for="supportType" class="block text-sm font-semibold text-ink/80 mb-1.5">आप किस तरह जुड़ना चाहेंगे</label>
+          <select id="supportType" name="supportType" required
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold">
+            <option value="" disabled selected>चुनें</option>
+            <option value="प्रचार अभियान में वालंटियर बनना है">प्रचार अभियान में वालंटियर बनना है</option>
+            <option value="पोस्टर/बैनर अपने क्षेत्र में लगवाना है">पोस्टर/बैनर अपने क्षेत्र में लगवाना है</option>
+            <option value="अपने वार्ड/मोहल्ले की जानकारी देनी है">अपने वार्ड/मोहल्ले की जानकारी देनी है</option>
+            <option value="जनसभा/बैठक आयोजित करवानी है">जनसभा/बैठक आयोजित करवानी है</option>
+            <option value="सिर्फ समर्थन दर्ज कराना है">सिर्फ समर्थन दर्ज कराना है</option>
+            <option value="कोई सुझाव देना है">कोई सुझाव देना है</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="message" class="block text-sm font-semibold text-ink/80 mb-1.5">अपनी बात लिखें</label>
+          <textarea id="message" name="message" rows="4" required
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold resize-none" placeholder="अपना सुझाव या संदेश यहाँ लिखें"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn"
+          class="btn-shine w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson via-gold to-leaf text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-crimson/30 hover:-translate-y-0.5 transition-transform">
+          <i class="fa-solid fa-hand-fist"></i> <span>समर्थन दर्ज करें</span>
+        </button>
+
+        <p id="formStatus" class="text-center text-sm pt-1" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-white/80 py-10">
+  <div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-8 text-center sm:text-right">
+    <div class="sm:text-right">
+      <div class="flex items-center justify-center sm:justify-end gap-3 mb-2">
+        <img src="candidate-logo.png" alt="अभियान लोगो" class="w-10 h-10 rounded-full ring-2 ring-gold object-cover" onerror="this.style.display='none'">
+        <h3 class="font-heading text-xl text-white">प्रभु दयाल कुमावत</h3>
+      </div>
+      <p class="text-sm text-white/55">ग्राम पंचायत खेड़ीराम — मेरा गाँव, मेरा अभिमान</p>
+    </div>
+    <div>
+      <h4 class="font-semibold text-white mb-2">संपर्क</h4>
+      <p class="text-sm"><i class="fa-solid fa-phone ml-1"></i> +91 00000 00000</p>
+      <p class="text-sm mt-1"><i class="fa-solid fa-location-dot ml-1"></i> ग्राम पंचायत खेड़ीराम</p>
+    </div>
+    <div>
+      <h4 class="font-semibold text-white mb-2">ऐप इंस्टॉल करें</h4>
+      <button id="installBtn" class="hidden inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-gold/25">
+        <i class="fa-solid fa-download"></i> App Install करें
+      </button>
+      <p id="installHint" class="text-sm text-white/45">ब्राउज़र मेनू से "Add to Home Screen" चुनें</p>
+    </div>
+  </div>
+  <p class="text-center text-white/35 text-xs mt-8">© 2026 प्रभु दयाल कुमावत — ग्राम पंचायत खेड़ीराम अभियान। सर्वाधिकार सुरक्षित।</p>
+</footer>
+
+<!-- ============ FRIENDLY INSTALL POPUP (for users unfamiliar with browser menus) ============ -->
+<div id="installPopup" class="fixed inset-x-0 bottom-0 z-[90] hidden px-4" style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
+  <div class="max-w-md mx-auto grad-card shadow-2xl mb-2">
+    <div class="p-5 relative">
+      <button onclick="dismissInstallPopup()" aria-label="बंद करें"
+        class="absolute top-3 left-3 w-8 h-8 rounded-full bg-ink/10 hover:bg-ink/20 flex items-center justify-center text-ink/60">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-crimson via-gold to-leaf flex items-center justify-center text-white text-xl flex-shrink-0">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </span>
+        <div>
+          <p class="font-heading text-lg text-ink leading-tight">फोन में ऐप जोड़ें</p>
+          <p class="text-ink/55 text-sm">एक बार इंस्टॉल करें, बिना इंटरनेट भी खुलेगी</p>
+        </div>
+      </div>
+
+      <!-- Android / Chrome: one-tap install -->
+      <div id="installPopupAndroid" class="hidden">
+        <button onclick="triggerInstall()"
+          class="btn-shine w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson to-crimson-dark text-white px-5 py-3.5 rounded-xl font-bold shadow-lg shadow-crimson/30">
+          <i class="fa-solid fa-download"></i> अभी इंस्टॉल करें
+        </button>
+      </div>
+
+      <!-- iOS Safari: manual steps (Apple doesn't allow one-tap install) -->
+      <div id="installPopupIOS" class="hidden space-y-2.5">
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-crimson text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+          नीचे <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-crimson"></i> Share बटन दबाएं
+        </p>
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+          "Add to Home Screen" पर टैप करें
+        </p>
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-leaf text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+          ऊपर दाईं तरफ "Add" दबाएं
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STICKY BOTTOM NAV (MOBILE) ============ -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 backdrop-blur-lg border-t border-ink/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+  <div class="grid grid-cols-3">
+    <button onclick="shareWhatsApp()" class="flex flex-col items-center justify-center gap-1 py-2.5">
+      <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-leaf to-leaf-dark text-white flex items-center justify-center"><i class="fa-brands fa-whatsapp text-base"></i></span>
+      <span class="text-[11px] font-medium text-ink/70">शेयर करें</span>
+    </button>
+    <a href="#samarthan" class="flex flex-col items-center justify-center gap-1 py-2.5 border-x border-ink/10">
+      <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-crimson to-gold text-white flex items-center justify-center"><i class="fa-solid fa-hand-fist text-base"></i></span>
+      <span class="text-[11px] font-medium text-ink/70">समर्थन करें</span>
+    </a>
+    <button id="installBtnMobile" onclick="triggerInstall()" class="flex flex-col items-center justify-center gap-1 py-2.5">
+      <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold to-gold-dark text-white flex items-center justify-center"><i class="fa-solid fa-download text-base"></i></span>
+      <span class="text-[11px] font-medium text-ink/70">Install करें</span>
+    </button>
+  </div>
+</nav>
+
+<script>
+  // ---------- Splash screen: show candidate photo first, then reveal site ----------
+  (function () {
+    const splash = document.getElementById('splashScreen');
+    if (!splash) return;
+    const MIN_DISPLAY_MS = 1400;
+    const shownAt = Date.now();
+    function hideSplash() {
+      const elapsed = Date.now() - shownAt;
+      const wait = Math.max(0, MIN_DISPLAY_MS - elapsed);
+      setTimeout(() => {
+        splash.classList.add('splash-hide');
+        setTimeout(() => splash.remove(), 700);
+      }, wait);
+    }
+    if (document.readyState === 'complete') {
+      hideSplash();
+    } else {
+      window.addEventListener('load', hideSplash);
+    }
+    // Safety net in case 'load' never fires quickly (slow network)
+    setTimeout(hideSplash, 3500);
+  })();
+
+  // ---------- Sankalp accordion toggle ----------
+  function toggleSankalp() {
+    const list = document.getElementById('sankalpList');
+    const btn = document.getElementById('sankalpToggle');
+    const isOpen = list.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
+  // ---------- WhatsApp Share ----------
+  function shareWhatsApp() {
+    const text = encodeURIComponent(
+      "प्रभु दयाल कुमावत - सरपंच पद के उम्मीदवार, ग्राम पंचायत खेड़ीराम\nमेरा संकल्प - मेरा वादा | खेड़ीराम का विकास, हमारा विश्वास\n\n" + window.location.href
+    );
+    window.open("https://api.whatsapp.com/send?text=" + text, "_blank");
+  }
+
+  // ---------- PWA install prompt ----------
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn')?.classList.remove('hidden');
+    document.getElementById('installHint')?.classList.add('hidden');
+  });
+
+  function triggerInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
+    } else {
+      alert('इंस्टॉल करने के लिए ब्राउज़र मेनू में "Add to Home Screen" विकल्प चुनें।');
+    }
+  }
+  document.getElementById('installBtn')?.addEventListener('click', triggerInstall);
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('installPopup')?.classList.add('hidden');
+    document.getElementById('installBtn')?.classList.add('hidden');
+  });
+
+  // ---------- Friendly install popup (villagers may not know browser menus) ----------
+  (function () {
+    const popup = document.getElementById('installPopup');
+    if (!popup) return;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) return; // already installed — don't bother the user
+
+    let dismissedAt = null;
+    try { dismissedAt = localStorage.getItem('installPopupDismissedAt'); } catch (e) { /* private mode etc. */ }
+    if (dismissedAt && (Date.now() - Number(dismissedAt)) < 7 * 24 * 60 * 60 * 1000) return; // dismissed recently
+
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+    function showInstallPopup() {
+      popup.classList.remove('hidden');
+      const target = isIOS ? 'installPopupIOS' : 'installPopupAndroid';
+      document.getElementById(target)?.classList.remove('hidden');
+    }
+
+    // Show a few seconds after the splash clears, so it doesn't compete for attention
+    window.addEventListener('load', () => setTimeout(showInstallPopup, 3200));
+  })();
+
+  function dismissInstallPopup() {
+    document.getElementById('installPopup')?.classList.add('hidden');
+    try { localStorage.setItem('installPopupDismissedAt', String(Date.now())); } catch (e) { /* private mode etc. */ }
+  }
+
+  // ---------- Service worker registration ----------
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+
+  // ---------- Grievance form submission ----------
+  // IMPORTANT: replace GOOGLE_SCRIPT_URL with your deployed Google Apps Script Web App URL
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUo98T_NDbILWXegB5n2i5VX3ciY2FLykyrc0sStWtp6ynLlQiR9yx9ewllVEpmS_KCg/exec";
+
+  const form = document.getElementById('grievanceForm');
+  const statusEl = document.getElementById('formStatus');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (GOOGLE_SCRIPT_URL.includes('PASTE_YOUR')) {
+      statusEl.textContent = "⚠️ पहले Google Apps Script URL सेट करें (index.html में GOOGLE_SCRIPT_URL देखें)।";
+      statusEl.className = "text-center text-sm pt-1 text-crimson font-medium";
+      return;
+    }
+
+    const data = {
+      fullName: document.getElementById('fullName').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      ward: document.getElementById('ward').value.trim(),
+      supportType: document.getElementById('supportType').value.trim(),
+      message: document.getElementById('message').value.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = "भेजा जा रहा है...";
+    statusEl.textContent = "";
+
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight with Apps Script
+      body: JSON.stringify(data)
+    })
+      .then(res => res.json())
+      .then(() => {
+        statusEl.textContent = "✅ धन्यवाद! आपका संदेश सफलतापूर्वक भेज दिया गया है।";
+        statusEl.className = "text-center text-sm pt-1 text-leaf-dark font-medium";
+        form.reset();
+      })
+      .catch(() => {
+        statusEl.textContent = "❌ संदेश भेजने में समस्या हुई। कृपया पुनः प्रयास करें या कॉल करें।";
+        statusEl.className = "text-center text-sm pt-1 text-crimson font-medium";
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = "समर्थन दर्ज करें";
+      });
+  });
+</script>
+
+</body>
+</html>
