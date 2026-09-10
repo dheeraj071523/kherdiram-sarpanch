@@ -559,10 +559,9 @@
     </div>
     <div>
       <h4 class="font-semibold text-white mb-2">ऐप इंस्टॉल करें</h4>
-      <button id="installBtn" class="hidden inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-gold/25">
+      <button id="installBtn" onclick="triggerInstall()" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-gold/25">
         <i class="fa-solid fa-download"></i> App Install करें
       </button>
-      <p id="installHint" class="text-sm text-white/45">ब्राउज़र मेनू से "Add to Home Screen" चुनें</p>
     </div>
   </div>
   <p class="text-center text-white/35 text-xs mt-8">© 2026 प्रभु दयाल कुमावत — ग्राम पंचायत खेड़ीराम अभियान। सर्वाधिकार सुरक्षित।</p>
@@ -571,23 +570,24 @@
 <!-- ============ FRIENDLY INSTALL POPUP (for users unfamiliar with browser menus) ============ -->
 <div id="installPopup" class="fixed inset-x-0 bottom-0 z-[90] hidden px-4" style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
   <div class="max-w-md mx-auto grad-card shadow-2xl mb-2">
-    <div class="p-5 relative">
-      <button onclick="dismissInstallPopup()" aria-label="बंद करें"
-        class="absolute top-3 left-3 w-8 h-8 rounded-full bg-ink/10 hover:bg-ink/20 flex items-center justify-center text-ink/60">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div class="flex items-center gap-3 mb-4">
-        <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-crimson via-gold to-leaf flex items-center justify-center text-white text-xl flex-shrink-0">
-          <i class="fa-solid fa-mobile-screen-button"></i>
-        </span>
-        <div>
-          <p class="font-heading text-lg text-ink leading-tight">फोन में ऐप जोड़ें</p>
-          <p class="text-ink/55 text-sm">एक बार इंस्टॉल करें, बिना इंटरनेट भी खुलेगी</p>
+    <div class="p-5">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-crimson via-gold to-leaf flex items-center justify-center text-white text-xl flex-shrink-0">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </span>
+          <div>
+            <p class="font-heading text-lg text-ink leading-tight">फोन में ऐप जोड़ें</p>
+            <p class="text-ink/55 text-sm">एक बार इंस्टॉल करें, बिना इंटरनेट भी खुलेगी</p>
+          </div>
         </div>
+        <button onclick="dismissInstallPopup()" aria-label="बंद करें"
+          class="flex-shrink-0 w-9 h-9 rounded-full bg-ink/10 hover:bg-ink/20 flex items-center justify-center text-ink/60">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
       </div>
 
-      <!-- Android / Chrome: one-tap install -->
+      <!-- Android / Chrome: one-tap install (shown only once the browser confirms it's installable) -->
       <div id="installPopupAndroid" class="hidden">
         <button onclick="triggerInstall()"
           class="btn-shine w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson to-crimson-dark text-white px-5 py-3.5 rounded-xl font-bold shadow-lg shadow-crimson/30">
@@ -608,6 +608,22 @@
         <p class="flex items-center gap-2.5 text-sm text-ink/80">
           <span class="w-6 h-6 rounded-full bg-leaf text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
           ऊपर दाईं तरफ "Add" दबाएं
+        </p>
+      </div>
+
+      <!-- Fallback: browser hasn't offered the native prompt yet, already used it, or doesn't support it -->
+      <div id="installPopupManual" class="hidden space-y-2.5">
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-crimson text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+          ऊपर दाईं तरफ <i class="fa-solid fa-ellipsis-vertical mx-1 text-crimson"></i> मेनू बटन दबाएं
+        </p>
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+          "Install app" या "Add to Home screen" चुनें
+        </p>
+        <p class="flex items-center gap-2.5 text-sm text-ink/80">
+          <span class="w-6 h-6 rounded-full bg-leaf text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+          "Install" या "Add" पर टैप करें
         </p>
       </div>
     </div>
@@ -674,29 +690,57 @@
 
   // ---------- PWA install prompt ----------
   let deferredPrompt = null;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+  // Decide which panel inside #installPopup should be visible right now,
+  // and show it. Safe to call multiple times (e.g. once on open, again
+  // later if the browser's real install prompt becomes available).
+  function refreshInstallPopupPanel() {
+    ['installPopupAndroid', 'installPopupIOS', 'installPopupManual'].forEach((id) => {
+      document.getElementById(id)?.classList.add('hidden');
+    });
+    let panelId;
+    if (isIOS) panelId = 'installPopupIOS';
+    else if (deferredPrompt) panelId = 'installPopupAndroid';
+    else panelId = 'installPopupManual'; // browser hasn't offered the prompt yet / already used / unsupported
+    document.getElementById(panelId)?.classList.remove('hidden');
+  }
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    document.getElementById('installBtn')?.classList.remove('hidden');
-    document.getElementById('installHint')?.classList.add('hidden');
+    // If the popup is already open (e.g. user opened it before the browser was ready),
+    // upgrade it live to the one-tap button instead of leaving the manual steps showing.
+    const popup = document.getElementById('installPopup');
+    if (popup && !popup.classList.contains('hidden')) refreshInstallPopupPanel();
   });
 
+  // Works from the footer button, the mobile bottom-nav button, and the popup's own button.
+  // Never dead-ends into a plain alert() — if the native prompt isn't available, it opens
+  // the same popup with clear manual steps instead.
   function triggerInstall() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
-    } else {
-      alert('इंस्टॉल करने के लिए ब्राउज़र मेनू में "Add to Home Screen" विकल्प चुनें।');
+      return;
+    }
+    const popup = document.getElementById('installPopup');
+    if (popup) {
+      refreshInstallPopupPanel();
+      popup.classList.remove('hidden');
     }
   }
-  document.getElementById('installBtn')?.addEventListener('click', triggerInstall);
 
   window.addEventListener('appinstalled', () => {
     document.getElementById('installPopup')?.classList.add('hidden');
-    document.getElementById('installBtn')?.classList.add('hidden');
   });
 
   // ---------- Friendly install popup (villagers may not know browser menus) ----------
+  // Auto-opens once per visit (max once every 7 days after a dismissal), unless the
+  // site is already installed. This is a plain in-page element, not a browser popup,
+  // so popup/ad blockers cannot suppress it — if it's ever missed, the always-visible
+  // "App Install करें" button in the footer (and the bottom nav on mobile) opens the
+  // exact same panel on demand.
   (function () {
     const popup = document.getElementById('installPopup');
     if (!popup) return;
@@ -708,18 +752,18 @@
     try { dismissedAt = localStorage.getItem('installPopupDismissedAt'); } catch (e) { /* private mode etc. */ }
     if (dismissedAt && (Date.now() - Number(dismissedAt)) < 7 * 24 * 60 * 60 * 1000) return; // dismissed recently
 
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-
     function showInstallPopup() {
+      refreshInstallPopupPanel();
       popup.classList.remove('hidden');
-      const target = isIOS ? 'installPopupIOS' : 'installPopupAndroid';
-      document.getElementById(target)?.classList.remove('hidden');
     }
 
     // Show a few seconds after the splash clears, so it doesn't compete for attention
     window.addEventListener('load', () => setTimeout(showInstallPopup, 3200));
   })();
 
+  // Dismissing only hides the auto-popup for 7 days — it does NOT disable the feature.
+  // Tapping "App Install करें" (footer/bottom-nav) at any time re-opens this same panel
+  // immediately, bypassing the 7-day cooldown, since that's a deliberate user action.
   function dismissInstallPopup() {
     document.getElementById('installPopup')?.classList.add('hidden');
     try { localStorage.setItem('installPopupDismissedAt', String(Date.now())); } catch (e) { /* private mode etc. */ }
