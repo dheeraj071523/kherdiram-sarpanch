@@ -58,7 +58,7 @@ function doPost(e) {
     const message = sanitize(data.message);
     const clientTimestamp = sanitize(data.timestamp);
 
-    if (!fullName || !phone || !message) {
+    if (!fullName || !phone) {
       return jsonResponse({ status: "error", message: "Missing required fields" });
     }
 

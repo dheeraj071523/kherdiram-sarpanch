@@ -67,6 +67,18 @@
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="candidate-logo.png">
+<link rel="icon" href="candidate-logo.png" type="image/png">
+
+<!-- Open Graph / WhatsApp-Facebook link preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="प्रभु दयाल कुमावत | सरपंच पद के उम्मीदवार - ग्राम पंचायत खेड़ीराम">
+<meta property="og:description" content="मेरा संकल्प - मेरा वादा | खेड़ीराम का विकास, हमारा विश्वास। 24 विकास संकल्प देखें और अभियान से जुड़ें।">
+<meta property="og:image" content="candidate-photo.jpg">
+<!-- Twitter card (some apps also check this) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="प्रभु दयाल कुमावत | सरपंच पद के उम्मीदवार">
+<meta name="twitter:description" content="मेरा संकल्प - मेरा वादा | खेड़ीराम का विकास, हमारा विश्वास">
+<meta name="twitter:image" content="candidate-photo.jpg">
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -472,11 +484,10 @@
       <a href="https://chat.whatsapp.com/LtJxVfvK2Zk6vEQYxht3gP" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-gradient-to-r from-leaf to-leaf-dark text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-leaf/25 hover:-translate-y-0.5 transition-transform">
         <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp ग्रुप जॉइन करें
       </a>
-      <!-- data-social="instagram": update href when the account is ready -->
-      <a href="#" data-social="instagram" class="inline-flex items-center gap-2 bg-ink/8 text-ink/40 px-6 py-3 rounded-2xl font-semibold cursor-not-allowed" aria-disabled="true" title="जल्द उपलब्ध">
-        <i class="fa-brands fa-instagram text-lg"></i> Instagram (जल्द)
+      <a href="https://www.instagram.com/prabhu.dayal.kumawat/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:-translate-y-0.5 transition-transform" style="background: linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4); box-shadow: 0 10px 20px -8px rgba(221,42,123,0.45);">
+        <i class="fa-brands fa-instagram text-lg"></i> Instagram पर फॉलो करें
       </a>
-      <!-- data-social="facebook": update href when the account is ready -->
+      <!-- data-social="facebook": update href when the Facebook Page link is ready -->
       <a href="#" data-social="facebook" class="inline-flex items-center gap-2 bg-ink/8 text-ink/40 px-6 py-3 rounded-2xl font-semibold cursor-not-allowed" aria-disabled="true" title="जल्द उपलब्ध">
         <i class="fa-brands fa-facebook text-lg"></i> Facebook (जल्द)
       </a>
@@ -512,7 +523,7 @@
 
         <div>
           <label for="supportType" class="block text-sm font-semibold text-ink/80 mb-1.5">आप किस तरह जुड़ना चाहेंगे</label>
-          <select id="supportType" name="supportType" required
+          <select id="supportType" name="supportType" required onchange="toggleSupportTypeOther()"
             class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold">
             <option value="" disabled selected>चुनें</option>
             <option value="प्रचार अभियान में वालंटियर बनना है">प्रचार अभियान में वालंटियर बनना है</option>
@@ -521,13 +532,17 @@
             <option value="जनसभा/बैठक आयोजित करवानी है">जनसभा/बैठक आयोजित करवानी है</option>
             <option value="सिर्फ समर्थन दर्ज कराना है">सिर्फ समर्थन दर्ज कराना है</option>
             <option value="कोई सुझाव देना है">कोई सुझाव देना है</option>
+            <option value="other">अन्य — खुद लिखें</option>
           </select>
+          <input type="text" id="supportTypeOther" name="supportTypeOther"
+            class="hidden mt-2 w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold"
+            placeholder="यहाँ लिखें कि आप कैसे जुड़ना/मदद करना चाहेंगे">
         </div>
 
         <div>
-          <label for="message" class="block text-sm font-semibold text-ink/80 mb-1.5">अपनी बात लिखें</label>
-          <textarea id="message" name="message" rows="4" required
-            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold resize-none" placeholder="अपना सुझाव या संदेश यहाँ लिखें"></textarea>
+          <label for="message" class="block text-sm font-semibold text-ink/80 mb-1.5">अपनी बात लिखें <span class="text-ink/40 font-normal">(वैकल्पिक)</span></label>
+          <textarea id="message" name="message" rows="4"
+            class="w-full rounded-xl border border-ink/15 bg-ink/[0.02] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold resize-none" placeholder="अगर कुछ लिखना चाहें तो यहाँ लिखें (जरूरी नहीं)"></textarea>
         </div>
 
         <button type="submit" id="submitBtn"
@@ -672,6 +687,20 @@
     setTimeout(hideSplash, 3500);
   })();
 
+  // ---------- Reveal custom write-in field for "अन्य — खुद लिखें" ----------
+  function toggleSupportTypeOther() {
+    const select = document.getElementById('supportType');
+    const otherField = document.getElementById('supportTypeOther');
+    if (!select || !otherField) return;
+    if (select.value === 'other') {
+      otherField.classList.remove('hidden');
+      otherField.focus();
+    } else {
+      otherField.classList.add('hidden');
+      otherField.value = '';
+    }
+  }
+
   // ---------- Sankalp accordion toggle ----------
   function toggleSankalp() {
     const list = document.getElementById('sankalpList');
@@ -716,18 +745,27 @@
   });
 
   // Works from the footer button, the mobile bottom-nav button, and the popup's own button.
-  // Never dead-ends into a plain alert() — if the native prompt isn't available, it opens
-  // the same popup with clear manual steps instead.
+  // Wrapped defensively so a click always visibly does something — logs to console for
+  // debugging instead of failing silently, and falls back to a plain alert as an absolute
+  // last resort if the popup element itself can't be found for some reason.
   function triggerInstall() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
-      return;
-    }
-    const popup = document.getElementById('installPopup');
-    if (popup) {
-      refreshInstallPopupPanel();
-      popup.classList.remove('hidden');
+    try {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
+        return;
+      }
+      const popup = document.getElementById('installPopup');
+      if (popup) {
+        refreshInstallPopupPanel();
+        popup.classList.remove('hidden');
+      } else {
+        console.error('triggerInstall: #installPopup element not found in the page');
+        alert('इंस्टॉल करने के लिए ब्राउज़र मेनू में "Add to Home Screen" विकल्प चुनें।');
+      }
+    } catch (err) {
+      console.error('triggerInstall failed:', err);
+      alert('इंस्टॉल करने के लिए ब्राउज़र मेनू में "Add to Home Screen" विकल्प चुनें।');
     }
   }
 
@@ -793,11 +831,17 @@
       return;
     }
 
+    const supportTypeSelect = document.getElementById('supportType').value.trim();
+    const supportTypeOtherText = document.getElementById('supportTypeOther').value.trim();
+    const finalSupportType = (supportTypeSelect === 'other')
+      ? (supportTypeOtherText || 'अन्य')
+      : supportTypeSelect;
+
     const data = {
       fullName: document.getElementById('fullName').value.trim(),
       phone: document.getElementById('phone').value.trim(),
       ward: document.getElementById('ward').value.trim(),
-      supportType: document.getElementById('supportType').value.trim(),
+      supportType: finalSupportType,
       message: document.getElementById('message').value.trim(),
       timestamp: new Date().toISOString()
     };

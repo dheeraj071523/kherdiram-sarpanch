@@ -4,7 +4,7 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v1";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v2";
 
 // Bump CACHE_NAME (e.g. -v2) whenever you update files, so users
 // automatically get the fresh version instead of a stale cached copy.
