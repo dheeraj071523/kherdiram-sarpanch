@@ -266,6 +266,7 @@
     <div class="hidden md:flex items-center gap-7 text-sm font-semibold text-ink/70">
       <a href="#main" class="hover:text-crimson transition-colors">होम</a>
       <a href="#sankalp" class="hover:text-crimson transition-colors">मेरे संकल्प</a>
+      <a href="#gatividhiyan" class="hover:text-crimson transition-colors">गतिविधियां</a>
       <a href="#samarthan" class="hover:text-crimson transition-colors">जुड़ें</a>
       <a href="#samarthan" class="inline-flex items-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-2.5 rounded-full shadow-lg shadow-crimson/25 hover:shadow-crimson/40 transition-shadow">
         <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
@@ -464,6 +465,16 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ गतिविधियां (ACTIVITIES GALLERY — data lives in activities/data.json on GitHub) ============ -->
+  <section id="gatividhiyan" class="max-w-6xl mx-auto px-4 py-14 sm:py-20 scroll-mt-20">
+    <div class="text-center mb-10">
+      <h2 class="font-heading text-3xl sm:text-4xl text-ink mb-2">हमारी गतिविधियां</h2>
+      <p class="text-ink/55 max-w-xl mx-auto">गाँव में हो रहे कार्यक्रमों और मुलाकातों की झलकियां</p>
+    </div>
+    <p id="gatividhiEmpty" class="text-center text-ink/40 py-6 hidden">जल्द ही यहाँ गतिविधियों की तस्वीरें जोड़ी जाएंगी।</p>
+    <div id="gatividhiGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   </section>
 
   <!-- ============ MERA VACHAN BANNER ============ -->
@@ -700,6 +711,126 @@
       otherField.value = '';
     }
   }
+
+  // ---------- गतिविधियां (Activities Gallery) ----------
+  // Data + images live in the GitHub repo (activities/data.json + activities/images/),
+  // served through the free jsDelivr CDN (not GitHub's rate-limited API). IndexedDB
+  // caches the last-seen data so the section renders instantly on repeat visits;
+  // a single lightweight background fetch checks for anything new and re-renders
+  // in place — no page reload, and no extra requests if nothing changed.
+  (function () {
+    const GATIVIDHI_OWNER = 'dheeraj071523';
+    const GATIVIDHI_REPO = 'kherdiram-sarpanch';
+    const GATIVIDHI_BRANCH = 'main';
+    const GATIVIDHI_JSON_URL = `https://cdn.jsdelivr.net/gh/${GATIVIDHI_OWNER}/${GATIVIDHI_REPO}@${GATIVIDHI_BRANCH}/activities/data.json`;
+    const GATIVIDHI_DB_NAME = 'kherdiramSarpanchDB';
+    const GATIVIDHI_STORE = 'activities';
+    const HINDI_MONTHS = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+
+    function gatividhiImageUrl(path) {
+      return `https://cdn.jsdelivr.net/gh/${GATIVIDHI_OWNER}/${GATIVIDHI_REPO}@${GATIVIDHI_BRANCH}/${path}`;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    function formatDateHindi(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-').map(Number);
+      const y = parts[0], m = parts[1], d = parts[2];
+      if (!y || !m || !d) return dateStr;
+      return `${d} ${HINDI_MONTHS[m - 1]} ${y}`;
+    }
+
+    function openGatividhiDB() {
+      return new Promise((resolve, reject) => {
+        if (!('indexedDB' in window)) { reject(new Error('IndexedDB not supported')); return; }
+        const req = indexedDB.open(GATIVIDHI_DB_NAME, 1);
+        req.onupgradeneeded = () => { req.result.createObjectStore(GATIVIDHI_STORE); };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getCachedGatividhi() {
+      try {
+        const db = await openGatividhiDB();
+        return await new Promise((resolve) => {
+          const tx = db.transaction(GATIVIDHI_STORE, 'readonly');
+          const req = tx.objectStore(GATIVIDHI_STORE).get('data');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) { return null; }
+    }
+
+    async function setCachedGatividhi(data) {
+      try {
+        const db = await openGatividhiDB();
+        const tx = db.transaction(GATIVIDHI_STORE, 'readwrite');
+        tx.objectStore(GATIVIDHI_STORE).put(data, 'data');
+      } catch (e) { /* not critical — page still works without caching */ }
+    }
+
+    function renderGatividhi(data) {
+      const grid = document.getElementById('gatividhiGrid');
+      const emptyMsg = document.getElementById('gatividhiEmpty');
+      if (!grid) return;
+      const items = (data && Array.isArray(data.items)) ? data.items.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) : [];
+
+      if (items.length === 0) {
+        grid.innerHTML = '';
+        emptyMsg?.classList.remove('hidden');
+        return;
+      }
+      emptyMsg?.classList.add('hidden');
+
+      grid.innerHTML = items.map((item) => `
+        <article class="grad-card">
+          <div>
+            <img src="${gatividhiImageUrl(item.image)}" alt="${escapeHtml(item.description || 'गतिविधि')}"
+              loading="lazy" decoding="async"
+              class="w-full h-48 object-cover rounded-t-[calc(1.5rem-1px)]">
+            <div class="p-4">
+              <p class="text-ink/90 leading-snug mb-2">${escapeHtml(item.description || '')}</p>
+              <div class="flex items-center gap-3 text-ink/50 text-xs font-medium">
+                <span><i class="fa-solid fa-calendar-days ml-1"></i> ${escapeHtml(formatDateHindi(item.date))}</span>
+                <span><i class="fa-solid fa-clock ml-1"></i> ${escapeHtml(item.timeDisplay || '')}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function initGatividhi() {
+      const grid = document.getElementById('gatividhiGrid');
+      if (!grid) return;
+
+      // 1) Show cached data instantly — no network wait, no flash of empty content
+      const cached = await getCachedGatividhi();
+      if (cached) renderGatividhi(cached);
+
+      // 2) One lightweight background check for anything new (served via jsDelivr's
+      //    CDN, not GitHub's API, so this never counts against any API rate limit)
+      try {
+        const res = await fetch(GATIVIDHI_JSON_URL, { cache: 'no-store' });
+        if (!res.ok) return;
+        const fresh = await res.json();
+        if (!cached || cached.updatedAt !== fresh.updatedAt) {
+          renderGatividhi(fresh);
+          setCachedGatividhi(fresh);
+        }
+      } catch (e) {
+        // Offline or jsDelivr unreachable — cached version (if any) stays shown as-is
+      }
+    }
+
+    window.addEventListener('load', initGatividhi);
+  })();
 
   // ---------- Sankalp accordion toggle ----------
   function toggleSankalp() {
