@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ऑफ़लाइन — प्रभु दयाल कुमावत</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: Arial, "Noto Sans Devanagari", sans-serif;
+  }
+  body {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 20px 16px 32px;
+    background: linear-gradient(150deg, #B31E2E 0%, #8C1523 45%, #14110F 100%);
+    color: #ffffff;
+  }
+
+  .photo-frame {
+    width: 88px; height: 88px; border-radius: 50%; padding: 4px; margin: 6px 0 12px;
+    background: conic-gradient(from 180deg, #E08E1E, #B31E2E, #0F9D58, #F5B94A, #E08E1E);
+  }
+  .photo-frame img {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background: #eee;
+  }
+
+  h1 { font-size: 1.3rem; margin: 0 0 2px; }
+  .role { font-size: 0.85rem; color: #F5B94A; font-weight: 600; margin: 0 0 4px; }
+  .tagline { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0 0 18px; max-width: 320px; line-height: 1.5; }
+
+  .offline-note {
+    font-size: 0.78rem; color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.08); border-radius: 999px;
+    padding: 6px 14px; margin-bottom: 18px;
+  }
+
+  .game-wrap {
+    width: 100%; max-width: 380px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 14px;
+  }
+  .game-title { font-size: 1rem; font-weight: 700; margin: 0 0 2px; }
+  .game-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin: 0 0 10px; }
+
+  #gameCanvas {
+    width: 100%; height: 320px; display: block; border-radius: 14px;
+    background: linear-gradient(180deg, #fffbf5 0%, #f3e9d8 100%);
+    touch-action: none;
+  }
+
+  .score-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; font-size: 0.85rem; font-weight: 600;
+  }
+  .score-row span.label { color: rgba(255,255,255,0.55); font-weight: 500; }
+
+  .btn {
+    font-family: inherit; font-size: 0.95rem; font-weight: 700; color: #ffffff;
+    background: linear-gradient(90deg, #E08E1E, #F5B94A);
+    border: none; border-radius: 999px; padding: 12px 28px; cursor: pointer;
+    box-shadow: 0 10px 22px -8px rgba(224,142,30,0.6);
+    margin-top: 14px;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-outline {
+    background: transparent; border: 1.5px solid rgba(255,255,255,0.3);
+    box-shadow: none; color: rgba(255,255,255,0.85); font-size: 0.85rem; padding: 10px 22px;
+  }
+
+  .game-over-msg { font-size: 0.85rem; color: #F5B94A; font-weight: 700; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+
+  <div class="photo-frame"><img src="candidate-photo.jpg" alt="प्रभु दयाल कुमावत" onerror="this.src='candidate-logo.png'"></div>
+  <h1>प्रभु दयाल कुमावत</h1>
+  <p class="role">सरपंच पद के उम्मीदवार — ग्राम पंचायत खेड़ीराम</p>
+  <p class="tagline">मेरा संकल्प - मेरा वादा | खेड़ीराम का विकास, हमारा विश्वास</p>
+
+  <p class="offline-note">📶 आप अभी इंटरनेट से जुड़े नहीं हैं — तब तक यह छोटा सा खेल खेलें</p>
+
+  <div class="game-wrap">
+    <p class="game-title">🧺 विकास संकल्प कैच गेम</p>
+    <p class="game-sub">टोकरी को स्वाइप/खींचकर हर गिरते हुए संकल्प-चिन्ह को पकड़ें</p>
+    <canvas id="gameCanvas"></canvas>
+    <div class="score-row">
+      <span><span class="label">समर्थन अंक:</span> <span id="scoreVal">0</span></span>
+      <span><span class="label">छूटे:</span> <span id="missVal">0</span>/5</span>
+    </div>
+    <p id="gameOverMsg" class="game-over-msg"></p>
+    <button id="startBtn" class="btn" onclick="startGame()">खेल शुरू करें 🎮</button>
+  </div>
+
+  <button class="btn btn-outline" onclick="window.location.reload()">फिर से कोशिश करें (इंटरनेट चेक करें)</button>
+
+<script>
+  // ============================================================
+  // विकास संकल्प कैच गेम — fully self-contained (canvas + emoji only,
+  // no external fonts/icons/images needed), so it works with zero network.
+  // ============================================================
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const SYMBOLS = ['🛣️', '💧', '❤️', '📚', '💡', '🏏', '🌾', '🤝', '🏥', '🏦'];
+
+  let width = 0, height = 0;
+  let basketX = 0;
+  const basketWidth = 64, basketHeight = 16;
+  let items = [];
+  let score = 0, misses = 0;
+  let running = false;
+  let spawnTimer = 0, lastTime = 0, spawnInterval = 1000;
+  let animId = null;
+
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    width = rect.width; height = rect.height;
+    canvas.width = width * dpr; canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (basketX === 0) basketX = width / 2 - basketWidth / 2;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function drawBasket() {
+    const y = height - 26;
+    ctx.fillStyle = '#E08E1E';
+    ctx.beginPath();
+    ctx.moveTo(basketX, y);
+    ctx.lineTo(basketX + basketWidth, y);
+    ctx.lineTo(basketX + basketWidth - 8, y + basketHeight);
+    ctx.lineTo(basketX + 8, y + basketHeight);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#B36F0F';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function spawnItem() {
+    items.push({
+      x: 20 + Math.random() * (width - 40),
+      y: -20,
+      symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      speed: 60 + Math.random() * 40 + Math.min(score, 20) * 2
+    });
+  }
+
+  function update(dt) {
+    spawnTimer += dt;
+    if (spawnTimer > spawnInterval) {
+      spawnTimer = 0;
+      spawnItem();
+      spawnInterval = Math.max(480, spawnInterval - 15);
+    }
+
+    const basketTop = height - 26;
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      it.y += it.speed * dt / 1000;
+
+      if (it.y >= basketTop - 6 && it.y <= basketTop + basketHeight &&
+          it.x >= basketX - 10 && it.x <= basketX + basketWidth + 10) {
+        items.splice(i, 1);
+        score++;
+        document.getElementById('scoreVal').textContent = score;
+        continue;
+      }
+      if (it.y > height + 20) {
+        items.splice(i, 1);
+        misses++;
+        document.getElementById('missVal').textContent = misses;
+        if (misses >= 5) { endGame(); return; }
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.font = '26px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    items.forEach((it) => ctx.fillText(it.symbol, it.x, it.y));
+    drawBasket();
+  }
+
+  function loop(t) {
+    if (!running) return;
+    const dt = lastTime ? t - lastTime : 16;
+    lastTime = t;
+    update(dt);
+    draw();
+    animId = requestAnimationFrame(loop);
+  }
+
+  function setBasketFromClientX(clientX) {
+    const rect = canvas.getBoundingClientRect();
+    basketX = clientX - rect.left - basketWidth / 2;
+    basketX = Math.max(4, Math.min(width - basketWidth - 4, basketX));
+  }
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!running) return;
+    e.preventDefault();
+    setBasketFromClientX(e.touches[0].clientX);
+  }, { passive: false });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!running) return;
+    setBasketFromClientX(e.clientX);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!running) return;
+    if (e.key === 'ArrowLeft') basketX = Math.max(4, basketX - 24);
+    if (e.key === 'ArrowRight') basketX = Math.min(width - basketWidth - 4, basketX + 24);
+  });
+
+  function startGame() {
+    resizeCanvas();
+    items = []; score = 0; misses = 0; spawnTimer = 0; spawnInterval = 1000; lastTime = 0;
+    document.getElementById('scoreVal').textContent = '0';
+    document.getElementById('missVal').textContent = '0';
+    document.getElementById('gameOverMsg').style.display = 'none';
+    document.getElementById('startBtn').textContent = 'दोबारा शुरू करें 🔁';
+    running = true;
+    if (animId) cancelAnimationFrame(animId);
+    animId = requestAnimationFrame(loop);
+  }
+
+  function endGame() {
+    running = false;
+    if (animId) cancelAnimationFrame(animId);
+    const msg = document.getElementById('gameOverMsg');
+    msg.textContent = `🎉 समर्थन अंक: ${score} — प्रभु दयाल कुमावत को समर्थन देने के लिए धन्यवाद!`;
+    msg.style.display = 'block';
+    document.getElementById('startBtn').textContent = 'फिर से खेलें 🎮';
+  }
+
+  resizeCanvas();
+  draw();
+</script>
+
+</body>
+</html>

@@ -4,14 +4,22 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v2";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v3";
 
-// Bump CACHE_NAME (e.g. -v2) whenever you update files, so users
+// Bump CACHE_NAME (e.g. -v4) whenever you update files, so users
 // automatically get the fresh version instead of a stale cached copy.
+// NOTE: this mainly matters for images/icons. The page itself (index.html)
+// is fetched network-first below, so it self-updates on every online visit
+// regardless of this version number — see index.html's registration code
+// for the piece that forces the browser to check for a new sw.js quickly
+// instead of waiting for its normal ~24 hour update-check throttle.
+
+const OFFLINE_URL = "./offline.html";
 
 const PRECACHE_URLS = [
   "./",
   "./index.html",
+  "./offline.html",
   "./manifest.json",
   "./candidate-photo.jpg",
   "./candidate-logo.png",
@@ -31,7 +39,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// ---------- ACTIVATE: clean up old caches ----------
+// ---------- ACTIVATE: clean up old caches, take control immediately ----------
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -58,7 +66,10 @@ self.addEventListener("fetch", (event) => {
     (request.headers.get("accept") || "").includes("text/html");
 
   if (isHTML) {
-    // Network-first: always try to fetch the latest page; fall back to cache if offline
+    // Network-first: always try to fetch the latest page. If that fails
+    // (genuinely offline), fall back to the exact cached page, then to
+    // cached index.html, and only as an absolute last resort — if nothing
+    // at all has ever been cached on this device — a dedicated offline page.
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -66,7 +77,11 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+        .catch(() =>
+          caches.match(request)
+            .then((cached) => cached || caches.match("./index.html"))
+            .then((cached) => cached || caches.match(OFFLINE_URL))
+        )
     );
   } else {
     // Cache-first for images, fonts, CSS, JS, etc. — fast repeat loads

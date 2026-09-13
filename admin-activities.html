@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — गतिविधियां प्रबंधन</title>
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#991B1B">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -13,8 +15,8 @@
     theme: {
       extend: {
         colors: {
-          crimson: { DEFAULT: '#B31E2E', dark: '#8C1523' },
-          gold: { DEFAULT: '#E08E1E', dark: '#B36F0F' },
+          crimson: { DEFAULT: '#B31E2E', dark: '#8C1523', light: '#E14559' },
+          gold: { DEFAULT: '#E08E1E', light: '#F5B94A', dark: '#B36F0F' },
           leaf: { DEFAULT: '#0F9D58', dark: '#0B7A44' },
           cream: '#FFFBF5',
           ink: '#1E1B18'
@@ -30,26 +32,49 @@
 <style>
   body { font-family: 'Hind', sans-serif; background: #FFFBF5; color: #1E1B18; }
   h1, h2, .font-heading { font-family: 'Tiro Devanagari Hindi', serif; }
+  .grad-card {
+    position: relative; border-radius: 1.25rem; padding: 1px;
+    background: linear-gradient(135deg, rgba(179,30,46,0.35), rgba(224,142,30,0.35), rgba(15,157,88,0.35));
+  }
+  .grad-card > div { border-radius: calc(1.25rem - 1px); background: #FFFFFF; height: 100%; }
+  .btn-shine { position: relative; overflow: hidden; }
+  .btn-shine::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+    transform: skewX(-20deg); animation: shine 3.4s ease-in-out infinite;
+  }
+  @keyframes shine { 0% { left: -60%; } 35% { left: 130%; } 100% { left: 130%; } }
+  @media (prefers-reduced-motion: reduce) { .btn-shine::after { animation: none; } }
 </style>
 </head>
 <body class="min-h-screen pb-16">
 
-  <div class="max-w-2xl mx-auto px-4 py-8">
+  <!-- Header -->
+  <header class="bg-gradient-to-br from-crimson via-crimson-dark to-ink">
+    <div class="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between gap-3">
+      <div>
+        <p class="text-gold-light text-xs font-semibold tracking-wide">ADMIN PANEL</p>
+        <h1 class="font-heading text-white text-2xl">गतिविधियां प्रबंधन</h1>
+      </div>
+      <button id="installBtn" onclick="triggerInstall()" class="hidden flex-shrink-0 inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-4 py-2.5 rounded-full text-sm font-semibold shadow-lg">
+        <i class="fa-solid fa-download"></i> Install
+      </button>
+    </div>
+  </header>
 
-    <h1 class="font-heading text-2xl sm:text-3xl mb-1">गतिविधियां — Admin पैनल</h1>
-    <p class="text-ink/55 text-sm mb-6">यहाँ से जोड़ी गई फोटो सीधे आपकी GitHub repository में सेव होती हैं — कोई अलग server/database नहीं।</p>
+  <div class="max-w-2xl mx-auto px-4 py-6">
 
     <!-- Security warning -->
-    <div class="bg-crimson/5 border border-crimson/20 rounded-xl p-4 mb-6 text-sm text-ink/80 flex gap-3">
+    <div class="bg-crimson/5 border border-crimson/20 rounded-2xl p-4 mb-6 text-sm text-ink/80 flex gap-3">
       <i class="fa-solid fa-shield-halved text-crimson mt-0.5"></i>
       <div>
         <p class="font-semibold text-crimson mb-1">यह पेज पब्लिक ना करें</p>
-        <p>नीचे जो Token डालेंगे वो आपकी repository का पासवर्ड जैसा है। इसे कभी किसी को ना दें, ना ही किसी स्क्रीनशॉट/मैसेज में भेजें। यह पेज साइट के मेनू में लिंक नहीं है — सिर्फ आप ही इसका पता जानते हैं।</p>
+        <p>नीचे जो Token डालेंगे वो आपकी repository का पासवर्ड जैसा है। इसे कभी किसी को ना दें।</p>
       </div>
     </div>
 
     <!-- Token -->
-    <div class="border border-ink/10 rounded-2xl p-5 mb-6 bg-white">
+    <div class="grad-card mb-6"><div class="p-5">
       <label for="tokenInput" class="block text-sm font-semibold mb-1.5">GitHub Personal Access Token</label>
       <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
         class="w-full rounded-xl border border-ink/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
@@ -57,16 +82,27 @@
         <input type="checkbox" id="rememberToken" class="rounded">
         इस डिवाइस पर याद रखें (सिर्फ अपने निजी फोन/लैपटॉप पर ही चुनें)
       </label>
-      <p class="text-xs text-ink/40 mt-2">Token कैसे बनाएं, इसके स्टेप्स README-hosting-guide.md में हैं।</p>
-    </div>
+      <p class="text-xs text-ink/40 mt-2">Token कैसे बनाएं — README-hosting-guide.md में स्टेप्स हैं।</p>
+    </div></div>
 
-    <!-- Add new activity -->
-    <div class="border border-ink/10 rounded-2xl p-5 mb-8 bg-white">
-      <h2 class="font-heading text-lg mb-4">नई गतिविधि जोड़ें</h2>
-      <form id="addForm" onsubmit="handleAddActivity(event)" class="space-y-4">
+    <!-- Add / Edit form -->
+    <div class="grad-card mb-8"><div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="formTitle" class="font-heading text-lg">नई गतिविधि जोड़ें</h2>
+        <button type="button" id="cancelEditBtn" onclick="cancelEdit()" class="hidden text-xs font-semibold text-crimson">
+          <i class="fa-solid fa-xmark ml-1"></i> रद्द करें
+        </button>
+      </div>
+      <form id="addForm" onsubmit="handleSubmitActivity(event)" class="space-y-4">
+        <div id="currentImagePreviewWrap" class="hidden">
+          <img id="currentImagePreview" class="w-full h-40 object-cover rounded-xl mb-2" alt="">
+          <p class="text-xs text-ink/45 mb-2">मौजूदा फोटो — नई फोटो सिर्फ तभी चुनें जब आप इसे बदलना चाहें</p>
+        </div>
         <div>
-          <label for="imageInput" class="block text-sm font-semibold mb-1.5">फोटो चुनें</label>
-          <input type="file" id="imageInput" accept="image/*" required
+          <label for="imageInput" class="block text-sm font-semibold mb-1.5">
+            <span id="imageInputLabel">फोटो चुनें</span>
+          </label>
+          <input type="file" id="imageInput" accept="image/*"
             class="w-full text-sm rounded-xl border border-ink/15 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold">
         </div>
         <div>
@@ -87,16 +123,16 @@
               class="w-full rounded-xl border border-ink/15 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
           </div>
         </div>
-        <button type="submit" id="addSubmitBtn"
-          class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson to-crimson-dark text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-crimson/25">
-          <i class="fa-solid fa-upload"></i> गतिविधि जोड़ें
+        <button type="submit" id="submitBtn"
+          class="btn-shine w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson via-gold to-leaf text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-crimson/25">
+          <i class="fa-solid fa-upload"></i> <span id="submitBtnText">गतिविधि जोड़ें</span>
         </button>
         <p id="addStatus" class="text-sm text-center"></p>
       </form>
-    </div>
+    </div></div>
 
     <!-- Existing activities -->
-    <div class="border border-ink/10 rounded-2xl p-5 bg-white">
+    <div class="grad-card"><div class="p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-heading text-lg">मौजूदा गतिविधियां</h2>
         <button onclick="loadActivities()" class="text-sm text-crimson font-medium"><i class="fa-solid fa-rotate-right ml-1"></i> रीफ्रेश करें</button>
@@ -104,7 +140,7 @@
       <div id="activitiesList" class="space-y-2">
         <p class="text-ink/40 text-sm">लोड हो रहा है...</p>
       </div>
-    </div>
+    </div></div>
 
   </div>
 
@@ -113,9 +149,13 @@
   const OWNER = 'dheeraj071523';
   const REPO = 'kherdiram-sarpanch';
   const BRANCH = 'main';
-  const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}/contents`;
+  const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
   const RAW_BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
   const PURGE_BASE = `https://purge.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}`;
+
+  let currentActivities = [];   // last loaded list, used for edit lookups
+  let editingId = null;         // null = add mode, otherwise editing this item's id
+  let editingOldImage = null;   // image path to remove if replaced during edit
 
   // ---------- Token handling ----------
   function getToken() {
@@ -137,6 +177,10 @@
       }
     } catch (e) { /* private mode etc. */ }
     loadActivities();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   });
 
   function authHeaders(token) {
@@ -159,7 +203,6 @@
     const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     return new TextDecoder().decode(bytes);
   }
-
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -168,7 +211,6 @@
       reader.readAsDataURL(file);
     });
   }
-
   function to12Hour(time24) {
     if (!time24) return '';
     let [h, m] = time24.split(':').map(Number);
@@ -177,63 +219,122 @@
     if (h === 0) h = 12;
     return `${h}:${String(m).padStart(2, '0')} ${ampm}`;
   }
-
   function sanitizeFilename(name) {
     return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
   }
-
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str == null ? '' : String(str);
     return div.innerHTML;
   }
 
-  // ---------- GitHub Contents API helpers ----------
-  async function getJsonFile(token) {
-    const res = await fetch(`${API_BASE}/activities/data.json`, { headers: authHeaders(token) });
+  // ---------- Read data.json (read-only, never creates a commit) ----------
+  async function readJsonFile(token) {
+    const res = await fetch(`${API_ROOT}/contents/activities/data.json`, { headers: authHeaders(token) });
     if (!res.ok) throw new Error('data.json नहीं मिल पाई (स्टेटस ' + res.status + ') — पहले वह फाइल repo में बना लें।');
     const json = await res.json();
-    const content = base64ToUtf8(json.content);
-    return { data: JSON.parse(content), sha: json.sha };
+    return JSON.parse(base64ToUtf8(json.content));
   }
 
-  async function putJsonFile(token, dataObj, sha, message) {
-    const content = utf8ToBase64(JSON.stringify(dataObj, null, 2));
-    const res = await fetch(`${API_BASE}/activities/data.json`, {
-      method: 'PUT',
-      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, content, sha, branch: BRANCH })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error('data.json सेव नहीं हुई: ' + (err.message || res.status));
-    }
-    return res.json();
-  }
+  // ---------- Atomic single-commit write (Git Data API) ----------
+  // Combines any number of file additions/updates AND deletions into exactly ONE
+  // commit — so Cloudflare Pages triggers exactly ONE deployment per action,
+  // never two (one for the photo, one for the JSON, as separate commits would).
+  async function commitFiles(token, message, { upserts = [], deletePaths = [] }) {
+    const h = { ...authHeaders(token), 'Content-Type': 'application/json' };
 
-  async function uploadImageFile(token, file, path) {
-    const base64 = await fileToBase64(file);
-    const res = await fetch(`${API_BASE}/${path}`, {
-      method: 'PUT',
-      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: `गतिविधि फोटो जोड़ी: ${path}`, content: base64, branch: BRANCH })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error('फोटो अपलोड नहीं हुई: ' + (err.message || res.status));
+    const refRes = await fetch(`${API_ROOT}/git/ref/heads/${BRANCH}`, { headers: authHeaders(token) });
+    if (!refRes.ok) throw new Error('branch जानकारी नहीं मिली (टोकन की permission जांचें)');
+    const refJson = await refRes.json();
+    const latestCommitSha = refJson.object.sha;
+
+    const commitRes = await fetch(`${API_ROOT}/git/commits/${latestCommitSha}`, { headers: authHeaders(token) });
+    if (!commitRes.ok) throw new Error('मौजूदा commit नहीं मिला');
+    const commitJson = await commitRes.json();
+    const baseTreeSha = commitJson.tree.sha;
+
+    const treeEntries = [];
+    for (const file of upserts) {
+      const blobRes = await fetch(`${API_ROOT}/git/blobs`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({ content: file.base64Content, encoding: 'base64' })
+      });
+      if (!blobRes.ok) throw new Error('फाइल तैयार नहीं हो पाई: ' + file.path);
+      const blobJson = await blobRes.json();
+      treeEntries.push({ path: file.path, mode: '100644', type: 'blob', sha: blobJson.sha });
     }
-    return res.json();
+    for (const path of deletePaths) {
+      treeEntries.push({ path, mode: '100644', type: 'blob', sha: null });
+    }
+
+    const treeRes = await fetch(`${API_ROOT}/git/trees`, {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+    });
+    if (!treeRes.ok) throw new Error('बदलाव तैयार नहीं हो पाए');
+    const treeJson = await treeRes.json();
+
+    const newCommitRes = await fetch(`${API_ROOT}/git/commits`, {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ message, tree: treeJson.sha, parents: [latestCommitSha] })
+    });
+    if (!newCommitRes.ok) throw new Error('commit नहीं बन पाई');
+    const newCommitJson = await newCommitRes.json();
+
+    const updateRefRes = await fetch(`${API_ROOT}/git/refs/heads/${BRANCH}`, {
+      method: 'PATCH', headers: h,
+      body: JSON.stringify({ sha: newCommitJson.sha })
+    });
+    if (!updateRefRes.ok) throw new Error('repo अपडेट नहीं हो पाई');
+
+    return newCommitJson.sha;
   }
 
   async function purgeJsDelivr(path) {
     try { await fetch(`${PURGE_BASE}/${path}`); } catch (e) { /* best-effort, ignore failures */ }
   }
 
-  // ---------- Add activity ----------
-  async function handleAddActivity(e) {
+  // ---------- Add / Edit (single form, two modes) ----------
+  function startEditActivity(id) {
+    const item = currentActivities.find((i) => i.id === id);
+    if (!item) return;
+    editingId = id;
+    editingOldImage = item.image;
+
+    document.getElementById('formTitle').textContent = 'गतिविधि संपादित करें';
+    document.getElementById('submitBtnText').textContent = 'अपडेट करें';
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+    document.getElementById('imageInputLabel').textContent = 'नई फोटो चुनें (वैकल्पिक)';
+    document.getElementById('imageInput').required = false;
+
+    document.getElementById('descInput').value = item.description || '';
+    document.getElementById('dateInput').value = item.date || '';
+    document.getElementById('timeInput').value = item.time24 || '';
+
+    const preview = document.getElementById('currentImagePreview');
+    preview.src = `${RAW_BASE}/${item.image}`;
+    document.getElementById('currentImagePreviewWrap').classList.remove('hidden');
+
+    window.scrollTo({ top: document.getElementById('addForm').getBoundingClientRect().top + window.scrollY - 20, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    editingOldImage = null;
+    document.getElementById('addForm').reset();
+    document.getElementById('formTitle').textContent = 'नई गतिविधि जोड़ें';
+    document.getElementById('submitBtnText').textContent = 'गतिविधि जोड़ें';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
+    document.getElementById('imageInputLabel').textContent = 'फोटो चुनें';
+    document.getElementById('imageInput').required = false;
+    document.getElementById('currentImagePreviewWrap').classList.add('hidden');
+    document.getElementById('addStatus').textContent = '';
+  }
+
+  async function handleSubmitActivity(e) {
     e.preventDefault();
     const statusEl = document.getElementById('addStatus');
-    const submitBtn = document.getElementById('addSubmitBtn');
+    const submitBtn = document.getElementById('submitBtn');
     statusEl.textContent = '';
 
     const token = getToken();
@@ -247,55 +348,77 @@
     const description = document.getElementById('descInput').value.trim();
     const date = document.getElementById('dateInput').value;
     const time24 = document.getElementById('timeInput').value;
+    const newFile = fileInput.files[0] || null;
 
-    if (!fileInput.files[0] || !description || !date || !time24) {
+    if (!description || !date || !time24 || (!editingId && !newFile)) {
       statusEl.textContent = '⚠️ फोटो, विवरण, तारीख़ और समय — सभी भरें।';
       statusEl.className = 'text-sm text-center text-crimson';
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'अपलोड हो रहा है...';
+    submitBtn.querySelector('span').textContent = editingId ? 'अपडेट हो रहा है...' : 'अपलोड हो रहा है...';
 
     try {
-      const file = fileInput.files[0];
-      const timestamp = Date.now();
-      const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
-      const baseName = sanitizeFilename(file.name.replace(/\.[^.]+$/, ''));
-      const imagePath = `activities/images/${timestamp}-${baseName}.${ext}`;
-
-      await uploadImageFile(token, file, imagePath);
-
-      const { data, sha } = await getJsonFile(token);
+      const data = await readJsonFile(token);
       data.items = data.items || [];
-      data.items.push({
-        id: 'act_' + timestamp,
-        image: imagePath,
-        description,
-        date,
-        time24,
-        timeDisplay: to12Hour(time24),
-        timestamp
-      });
-      data.updatedAt = new Date().toISOString();
+      const upserts = [];
+      const deletePaths = [];
+      let imagePath = editingId ? editingOldImage : null;
 
-      await putJsonFile(token, data, sha, `नई गतिविधि जोड़ी: ${description.slice(0, 40)}`);
+      if (newFile) {
+        const timestamp = Date.now();
+        const ext = newFile.name.includes('.') ? newFile.name.split('.').pop() : 'jpg';
+        const baseName = sanitizeFilename(newFile.name.replace(/\.[^.]+$/, ''));
+        imagePath = `activities/images/${timestamp}-${baseName}.${ext}`;
+        upserts.push({ path: imagePath, base64Content: await fileToBase64(newFile) });
+        if (editingId && editingOldImage && editingOldImage !== imagePath) {
+          deletePaths.push(editingOldImage);
+        }
+      }
+
+      if (editingId) {
+        const idx = data.items.findIndex((i) => i.id === editingId);
+        if (idx === -1) throw new Error('यह गतिविधि अब मौजूद नहीं है — शायद पहले ही हट चुकी है');
+        data.items[idx] = {
+          ...data.items[idx],
+          image: imagePath,
+          description, date, time24,
+          timeDisplay: to12Hour(time24)
+        };
+      } else {
+        const timestamp = Date.now();
+        data.items.push({
+          id: 'act_' + timestamp,
+          image: imagePath,
+          description, date, time24,
+          timeDisplay: to12Hour(time24),
+          timestamp
+        });
+      }
+      data.updatedAt = new Date().toISOString();
+      upserts.push({ path: 'activities/data.json', base64Content: utf8ToBase64(JSON.stringify(data, null, 2)) });
+
+      const commitMsg = editingId
+        ? `गतिविधि अपडेट की: ${description.slice(0, 40)}`
+        : `नई गतिविधि जोड़ी: ${description.slice(0, 40)}`;
+      await commitFiles(token, commitMsg, { upserts, deletePaths });
       await purgeJsDelivr('activities/data.json');
 
-      statusEl.textContent = '✅ गतिविधि सफलतापूर्वक जोड़ी गई! साइट पर कुछ ही सेकंड में दिख जाएगी।';
+      statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।';
       statusEl.className = 'text-sm text-center text-leaf-dark font-medium';
-      document.getElementById('addForm').reset();
+      cancelEdit();
       loadActivities();
     } catch (err) {
       statusEl.textContent = '❌ ' + err.message;
       statusEl.className = 'text-sm text-center text-crimson';
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> गतिविधि जोड़ें';
+      submitBtn.querySelector('span').textContent = editingId ? 'अपडेट करें' : 'गतिविधि जोड़ें';
     }
   }
 
-  // ---------- List + delete ----------
+  // ---------- List ----------
   async function loadActivities() {
     const listEl = document.getElementById('activitiesList');
     listEl.innerHTML = '<p class="text-ink/40 text-sm">लोड हो रहा है...</p>';
@@ -303,7 +426,8 @@
       const res = await fetch(`${RAW_BASE}/activities/data.json?t=${Date.now()}`);
       if (!res.ok) throw new Error('data.json नहीं मिली — पहले वह फाइल repo में बनाएं।');
       const data = await res.json();
-      const items = (data.items || []).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      currentActivities = data.items || [];
+      const items = currentActivities.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       if (items.length === 0) {
         listEl.innerHTML = '<p class="text-ink/40 text-sm">अभी कोई गतिविधि नहीं जोड़ी गई।</p>';
         return;
@@ -315,6 +439,9 @@
             <p class="text-sm text-ink/90 truncate">${escapeHtml(item.description)}</p>
             <p class="text-xs text-ink/45">${escapeHtml(item.date)} · ${escapeHtml(item.timeDisplay)}</p>
           </div>
+          <button onclick="startEditActivity('${item.id}')" class="text-gold-dark hover:bg-gold/10 w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center" title="संपादित करें">
+            <i class="fa-solid fa-pen"></i>
+          </button>
           <button onclick="handleDeleteActivity('${item.id}')" class="text-crimson hover:bg-crimson/10 w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center" title="हटाएं">
             <i class="fa-solid fa-trash"></i>
           </button>
@@ -331,31 +458,36 @@
     if (!confirm('क्या आप वाकई इस गतिविधि को हटाना चाहते हैं?')) return;
 
     try {
-      const { data, sha } = await getJsonFile(token);
+      const data = await readJsonFile(token);
       const item = (data.items || []).find((i) => i.id === id);
       data.items = (data.items || []).filter((i) => i.id !== id);
       data.updatedAt = new Date().toISOString();
-      await putJsonFile(token, data, sha, `गतिविधि हटाई: ${id}`);
 
-      // Best-effort: also remove the image file from the repo
-      if (item && item.image) {
-        try {
-          const fileRes = await fetch(`${API_BASE}/${item.image}`, { headers: authHeaders(token) });
-          if (fileRes.ok) {
-            const fileJson = await fileRes.json();
-            await fetch(`${API_BASE}/${item.image}`, {
-              method: 'DELETE',
-              headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: `गतिविधि फोटो हटाई: ${item.image}`, sha: fileJson.sha, branch: BRANCH })
-            });
-          }
-        } catch (e) { /* image cleanup is best-effort */ }
-      }
+      const upserts = [{ path: 'activities/data.json', base64Content: utf8ToBase64(JSON.stringify(data, null, 2)) }];
+      const deletePaths = item && item.image ? [item.image] : [];
 
+      await commitFiles(token, `गतिविधि हटाई: ${id}`, { upserts, deletePaths });
       await purgeJsDelivr('activities/data.json');
+      if (editingId === id) cancelEdit();
       loadActivities();
     } catch (err) {
       alert('हटाने में समस्या: ' + err.message);
+    }
+  }
+
+  // ---------- PWA install ----------
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn')?.classList.remove('hidden');
+  });
+  function triggerInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
+    } else {
+      alert('इंस्टॉल के लिए ब्राउज़र मेनू से "Add to Home Screen" चुनें।');
     }
   }
 </script>

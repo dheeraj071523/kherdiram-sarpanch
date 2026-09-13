@@ -225,6 +225,25 @@
   }
 
   @media (max-width: 767px) { body { padding-bottom: 4.75rem; } }
+
+  /* ---------- गतिविधियां horizontal gallery ---------- */
+  .gatividhi-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gatividhi-scroll::-webkit-scrollbar { display: none; }
+  .gatividhi-card { scroll-snap-align: start; }
+  .gatividhi-card-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; filter: blur(20px) brightness(0.65); transform: scale(1.15);
+  }
+  .gatividhi-card-fg {
+    position: relative; width: 100%; height: 100%; object-fit: contain;
+  }
+  .line-clamp-2 {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
 </style>
 </head>
 <body>
@@ -468,14 +487,40 @@
   </section>
 
   <!-- ============ गतिविधियां (ACTIVITIES GALLERY — data lives in activities/data.json on GitHub) ============ -->
-  <section id="gatividhiyan" class="max-w-6xl mx-auto px-4 py-14 sm:py-20 scroll-mt-20">
-    <div class="text-center mb-10">
-      <h2 class="font-heading text-3xl sm:text-4xl text-ink mb-2">हमारी गतिविधियां</h2>
-      <p class="text-ink/55 max-w-xl mx-auto">गाँव में हो रहे कार्यक्रमों और मुलाकातों की झलकियां</p>
+  <section id="gatividhiyan" class="py-14 sm:py-20 scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-4 mb-8">
+      <h2 class="font-heading text-3xl sm:text-4xl text-ink mb-1">हमारी गतिविधियां</h2>
+      <p class="text-ink/55">गाँव में हो रहे कार्यक्रमों और मुलाकातों की झलकियां — देखने के लिए फोटो पर टैप करें</p>
     </div>
-    <p id="gatividhiEmpty" class="text-center text-ink/40 py-6 hidden">जल्द ही यहाँ गतिविधियों की तस्वीरें जोड़ी जाएंगी।</p>
-    <div id="gatividhiGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <p id="gatividhiEmpty" class="text-center text-ink/40 py-6 max-w-6xl mx-auto px-4 hidden">जल्द ही यहाँ गतिविधियों की तस्वीरें जोड़ी जाएंगी।</p>
+    <div id="gatividhiScroll" class="gatividhi-scroll flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory"></div>
   </section>
+
+  <!-- Instagram-style full image lightbox -->
+  <div id="gatividhiLightbox" class="fixed inset-0 z-[95] hidden flex-col bg-black/92 backdrop-blur-sm">
+    <div class="flex items-center justify-between p-4 text-white flex-shrink-0">
+      <span id="gatividhiLightboxCounter" class="text-sm text-white/60 font-medium"></span>
+      <button onclick="closeGatividhiLightbox()" aria-label="बंद करें" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="flex-1 flex items-center justify-center relative min-h-0 px-3">
+      <button onclick="gatividhiLightboxNav(-1)" aria-label="पिछली फोटो" class="hidden sm:flex absolute left-3 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <img id="gatividhiLightboxImg" src="" alt="" class="max-h-full max-w-full object-contain rounded-lg">
+      <button onclick="gatividhiLightboxNav(1)" aria-label="अगली फोटो" class="hidden sm:flex absolute right-3 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="flex-shrink-0 max-h-40 overflow-y-auto px-5 py-4 bg-black/50 text-white">
+      <p id="gatividhiLightboxDesc" class="text-sm leading-relaxed mb-2"></p>
+      <div class="flex items-center gap-3 text-white/55 text-xs">
+        <span><i class="fa-solid fa-calendar-days ml-1"></i> <span id="gatividhiLightboxDate"></span></span>
+        <span><i class="fa-solid fa-clock ml-1"></i> <span id="gatividhiLightboxTime"></span></span>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ MERA VACHAN BANNER ============ -->
   <section class="relative overflow-hidden bg-gradient-to-br from-ink via-leaf-dark to-ink">
@@ -714,10 +759,11 @@
 
   // ---------- गतिविधियां (Activities Gallery) ----------
   // Data + images live in the GitHub repo (activities/data.json + activities/images/),
-  // served through the free jsDelivr CDN (not GitHub's rate-limited API). IndexedDB
-  // caches the last-seen data so the section renders instantly on repeat visits;
-  // a single lightweight background fetch checks for anything new and re-renders
-  // in place — no page reload, and no extra requests if nothing changed.
+  // served through the free jsDelivr CDN (not GitHub's rate-limited API). Metadata is
+  // cached in IndexedDB and only re-rendered if the fetched updatedAt has changed.
+  // Actual image bytes are ALSO cached in IndexedDB (as Blobs) — once a photo has been
+  // seen, it never needs to be downloaded again; only genuinely new photos are fetched
+  // on a later visit. A lightbox shows each photo at full quality with no cropping.
   (function () {
     const GATIVIDHI_OWNER = 'dheeraj071523';
     const GATIVIDHI_REPO = 'kherdiram-sarpanch';
@@ -725,7 +771,11 @@
     const GATIVIDHI_JSON_URL = `https://cdn.jsdelivr.net/gh/${GATIVIDHI_OWNER}/${GATIVIDHI_REPO}@${GATIVIDHI_BRANCH}/activities/data.json`;
     const GATIVIDHI_DB_NAME = 'kherdiramSarpanchDB';
     const GATIVIDHI_STORE = 'activities';
+    const GATIVIDHI_IMG_STORE = 'activityImages';
     const HINDI_MONTHS = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+
+    let gatividhiItems = [];       // current sorted list, used by the lightbox
+    let gatividhiLightboxIndex = 0;
 
     function gatividhiImageUrl(path) {
       return `https://cdn.jsdelivr.net/gh/${GATIVIDHI_OWNER}/${GATIVIDHI_REPO}@${GATIVIDHI_BRANCH}/${path}`;
@@ -745,11 +795,16 @@
       return `${d} ${HINDI_MONTHS[m - 1]} ${y}`;
     }
 
+    // ---------- IndexedDB: metadata store + image blob store ----------
     function openGatividhiDB() {
       return new Promise((resolve, reject) => {
         if (!('indexedDB' in window)) { reject(new Error('IndexedDB not supported')); return; }
-        const req = indexedDB.open(GATIVIDHI_DB_NAME, 1);
-        req.onupgradeneeded = () => { req.result.createObjectStore(GATIVIDHI_STORE); };
+        const req = indexedDB.open(GATIVIDHI_DB_NAME, 2);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(GATIVIDHI_STORE)) db.createObjectStore(GATIVIDHI_STORE);
+          if (!db.objectStoreNames.contains(GATIVIDHI_IMG_STORE)) db.createObjectStore(GATIVIDHI_IMG_STORE);
+        };
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -775,44 +830,123 @@
       } catch (e) { /* not critical — page still works without caching */ }
     }
 
-    function renderGatividhi(data) {
-      const grid = document.getElementById('gatividhiGrid');
+    async function getCachedImageBlob(path) {
+      try {
+        const db = await openGatividhiDB();
+        return await new Promise((resolve) => {
+          const tx = db.transaction(GATIVIDHI_IMG_STORE, 'readonly');
+          const req = tx.objectStore(GATIVIDHI_IMG_STORE).get(path);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) { return null; }
+    }
+
+    async function cacheImageBlob(path, blob) {
+      try {
+        const db = await openGatividhiDB();
+        const tx = db.transaction(GATIVIDHI_IMG_STORE, 'readwrite');
+        tx.objectStore(GATIVIDHI_IMG_STORE).put(blob, path);
+      } catch (e) { /* not critical */ }
+    }
+
+    async function pruneOrphanedImageBlobs(validPaths) {
+      try {
+        const db = await openGatividhiDB();
+        const tx = db.transaction(GATIVIDHI_IMG_STORE, 'readwrite');
+        const store = tx.objectStore(GATIVIDHI_IMG_STORE);
+        const validSet = new Set(validPaths);
+        const keysReq = store.getAllKeys();
+        keysReq.onsuccess = () => {
+          keysReq.result.forEach((key) => { if (!validSet.has(key)) store.delete(key); });
+        };
+      } catch (e) { /* not critical */ }
+    }
+
+    // Downloads an image once and stores the raw bytes for next time. Never re-runs
+    // for a path that's already cached, so a repeat visit only fetches genuinely new photos.
+    async function fetchAndCacheImage(path) {
+      try {
+        const res = await fetch(gatividhiImageUrl(path));
+        if (!res.ok) return null;
+        const blob = await res.blob();
+        cacheImageBlob(path, blob);
+        return blob;
+      } catch (e) { return null; }
+    }
+
+    // Resolves the best available <img> src for each item right now: an already-cached
+    // blob (instant, zero network) if we have one, otherwise the live CDN URL.
+    async function buildImageSrcMap(items) {
+      const map = {};
+      await Promise.all(items.map(async (item) => {
+        const cached = await getCachedImageBlob(item.image);
+        map[item.image] = cached ? URL.createObjectURL(cached) : gatividhiImageUrl(item.image);
+      }));
+      return map;
+    }
+
+    // Fire-and-forget: for any item whose image isn't cached yet, download and cache it
+    // in the background so the NEXT visit needs zero network requests for that photo.
+    function cacheMissingImages(items) {
+      items.forEach(async (item) => {
+        const cached = await getCachedImageBlob(item.image);
+        if (!cached) fetchAndCacheImage(item.image);
+      });
+    }
+
+    async function renderGatividhi(data) {
+      const scroll = document.getElementById('gatividhiScroll');
       const emptyMsg = document.getElementById('gatividhiEmpty');
-      if (!grid) return;
-      const items = (data && Array.isArray(data.items)) ? data.items.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) : [];
+      if (!scroll) return;
+
+      const items = (data && Array.isArray(data.items))
+        ? data.items.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        : [];
+      gatividhiItems = items;
 
       if (items.length === 0) {
-        grid.innerHTML = '';
+        scroll.innerHTML = '';
         emptyMsg?.classList.remove('hidden');
         return;
       }
       emptyMsg?.classList.add('hidden');
 
-      grid.innerHTML = items.map((item) => `
-        <article class="grad-card">
+      const srcMap = await buildImageSrcMap(items);
+
+      scroll.innerHTML = items.map((item, i) => {
+        const src = srcMap[item.image];
+        const desc = escapeHtml(item.description || 'गतिविधि');
+        return `
+        <button type="button" onclick="gatividhiOpenLightbox(${i})"
+          class="gatividhi-card flex-shrink-0 w-56 sm:w-64 snap-start text-right rounded-2xl overflow-hidden grad-card">
           <div>
-            <img src="${gatividhiImageUrl(item.image)}" alt="${escapeHtml(item.description || 'गतिविधि')}"
-              loading="lazy" decoding="async"
-              class="w-full h-48 object-cover rounded-t-[calc(1.5rem-1px)]">
-            <div class="p-4">
-              <p class="text-ink/90 leading-snug mb-2">${escapeHtml(item.description || '')}</p>
-              <div class="flex items-center gap-3 text-ink/50 text-xs font-medium">
+            <div class="relative w-full aspect-[4/5] overflow-hidden rounded-t-[calc(1.5rem-1px)] bg-ink/5">
+              <img src="${src}" alt="" aria-hidden="true" loading="lazy" decoding="async" class="gatividhi-card-bg">
+              <img src="${src}" alt="${desc}" loading="lazy" decoding="async" class="gatividhi-card-fg">
+            </div>
+            <div class="p-3">
+              <p class="text-ink/90 text-sm leading-snug line-clamp-2 mb-1.5">${desc}</p>
+              <div class="flex items-center gap-2 text-ink/45 text-[11px] font-medium">
                 <span><i class="fa-solid fa-calendar-days ml-1"></i> ${escapeHtml(formatDateHindi(item.date))}</span>
                 <span><i class="fa-solid fa-clock ml-1"></i> ${escapeHtml(item.timeDisplay || '')}</span>
               </div>
             </div>
           </div>
-        </article>
-      `).join('');
+        </button>`;
+      }).join('');
+
+      cacheMissingImages(items);
+      pruneOrphanedImageBlobs(items.map((i) => i.image));
     }
 
     async function initGatividhi() {
-      const grid = document.getElementById('gatividhiGrid');
-      if (!grid) return;
+      const scroll = document.getElementById('gatividhiScroll');
+      if (!scroll) return;
 
       // 1) Show cached data instantly — no network wait, no flash of empty content
       const cached = await getCachedGatividhi();
-      if (cached) renderGatividhi(cached);
+      if (cached) await renderGatividhi(cached);
 
       // 2) One lightweight background check for anything new (served via jsDelivr's
       //    CDN, not GitHub's API, so this never counts against any API rate limit)
@@ -821,13 +955,54 @@
         if (!res.ok) return;
         const fresh = await res.json();
         if (!cached || cached.updatedAt !== fresh.updatedAt) {
-          renderGatividhi(fresh);
+          await renderGatividhi(fresh);
           setCachedGatividhi(fresh);
         }
       } catch (e) {
         // Offline or jsDelivr unreachable — cached version (if any) stays shown as-is
       }
     }
+
+    // ---------- Lightbox: full quality, no cropping, scrollable caption ----------
+    function renderGatividhiLightbox() {
+      const item = gatividhiItems[gatividhiLightboxIndex];
+      if (!item) return;
+      const img = document.getElementById('gatividhiLightboxImg');
+      img.src = gatividhiImageUrl(item.image);
+      img.alt = item.description || '';
+      document.getElementById('gatividhiLightboxDesc').textContent = item.description || '';
+      document.getElementById('gatividhiLightboxDate').textContent = formatDateHindi(item.date);
+      document.getElementById('gatividhiLightboxTime').textContent = item.timeDisplay || '';
+      document.getElementById('gatividhiLightboxCounter').textContent = `${gatividhiLightboxIndex + 1} / ${gatividhiItems.length}`;
+    }
+
+    window.gatividhiOpenLightbox = function (index) {
+      gatividhiLightboxIndex = index;
+      renderGatividhiLightbox();
+      const lb = document.getElementById('gatividhiLightbox');
+      lb?.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeGatividhiLightbox = function () {
+      document.getElementById('gatividhiLightbox')?.classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+
+    window.gatividhiLightboxNav = function (delta) {
+      const n = gatividhiItems.length;
+      if (!n) return;
+      gatividhiLightboxIndex = (gatividhiLightboxIndex + delta + n) % n;
+      renderGatividhiLightbox();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      const lb = document.getElementById('gatividhiLightbox');
+      if (!lb || lb.classList.contains('hidden')) return;
+      if (e.key === 'Escape') window.closeGatividhiLightbox();
+      if (e.key === 'ArrowLeft') window.gatividhiLightboxNav(-1);
+      if (e.key === 'ArrowRight') window.gatividhiLightboxNav(1);
+    });
 
     window.addEventListener('load', initGatividhi);
   })();
@@ -939,9 +1114,25 @@
   }
 
   // ---------- Service worker registration ----------
+  // Browsers only check for a new service worker roughly once every 24 hours
+  // by default. reg.update() forces an immediate check on every page load
+  // instead, so a fresh deploy is picked up the next time the user (or admin,
+  // while testing) opens the site online — not up to a day later.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => { reg.update(); })
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+
+    // The new service worker calls skipWaiting()/clients.claim(), so once it
+    // takes control, reload once to make sure this tab is served by it too —
+    // otherwise an already-open tab can keep running the old cached version.
+    let swRefreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (swRefreshed) return;
+      swRefreshed = true;
+      window.location.reload();
     });
   }
 
