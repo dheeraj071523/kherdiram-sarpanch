@@ -3,7 +3,7 @@
   "short_name": "गतिविधियां Admin",
   "description": "प्रभु दयाल कुमावत अभियान — गतिविधियां जोड़ने/एडिट करने के लिए एडमिन पैनल",
   "start_url": "./admin-activities.html",
-  "scope": "./",
+  "scope": "./admin-activities.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#FFFBF5",
