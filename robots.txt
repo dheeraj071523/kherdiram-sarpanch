@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin-activities.html
+
+Sitemap: https://kherdiram-sarpanch.mission-sarpanch26.workers.dev/sitemap.xml
