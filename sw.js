@@ -4,12 +4,12 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v3";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v4";
 
-// Bump CACHE_NAME (e.g. -v4) whenever you update files, so users
+// Bump CACHE_NAME (e.g. -v5) whenever you update files, so users
 // automatically get the fresh version instead of a stale cached copy.
-// NOTE: this mainly matters for images/icons. The page itself (index.html)
-// is fetched network-first below, so it self-updates on every online visit
+// NOTE: this mainly matters for images/icons. The pages themselves are
+// fetched network-first below, so they self-update on every online visit
 // regardless of this version number — see index.html's registration code
 // for the piece that forces the browser to check for a new sw.js quickly
 // instead of waiting for its normal ~24 hour update-check throttle.
@@ -19,6 +19,12 @@ const OFFLINE_URL = "./offline.html";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
+  "./about.html",
+  "./news-updates.html",
+  "./contact.html",
+  "./privacy-policy.html",
+  "./disclaimer.html",
+  "./terms-and-conditions.html",
   "./offline.html",
   "./manifest.json",
   "./candidate-photo.jpg",
@@ -26,6 +32,9 @@ const PRECACHE_URLS = [
   "./icon-192.png",
   "./icon-512.png"
 ];
+// NOTE: admin-activities.html and manifest-admin.json are intentionally
+// NOT in this list — there's no benefit to pre-loading the admin tool for
+// every regular visitor, so it only gets cached if/when someone actually opens it.
 
 // ---------- INSTALL: pre-cache core files ----------
 self.addEventListener("install", (event) => {

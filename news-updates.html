@@ -38,11 +38,17 @@
       <img src="candidate-logo.png" alt="अभियान लोगो" class="w-10 h-10 rounded-full ring-2 ring-gold object-cover" onerror="this.style.display='none'">
       <span class="font-heading text-lg text-ink">प्रभु दयाल कुमावत</span>
     </a>
-    <div class="flex items-center gap-5 text-sm font-semibold text-ink/70">
-      <a href="index.html" class="hover:text-crimson transition-colors hidden sm:inline">होम</a>
-      <a href="about.html" class="hover:text-crimson transition-colors">परिचय</a>
-      <a href="news-updates.html" class="text-crimson">समाचार</a>
-      <a href="contact.html" class="hover:text-crimson transition-colors">संपर्क</a>
+    <button onclick="toggleMobileMenu()" id="mobileMenuBtn" aria-expanded="false" aria-controls="mobileMenuPanel" aria-label="मेनू खोलें"
+      class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-ink/5 text-ink hover:bg-ink/10 transition-colors">
+      <i id="mobileMenuIcon" class="fa-solid fa-bars text-lg"></i>
+    </button>
+  </div>
+  <div id="mobileMenuPanel" class="hidden border-t border-ink/5 bg-cream/95 backdrop-blur-lg">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col text-sm font-semibold text-ink/75">
+      <a href="index.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
+      <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-user w-5 text-crimson"></i> परिचय</a>
+      <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3 text-crimson"><i class="fa-solid fa-newspaper w-5"></i> समाचार</a>
+      <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
     </div>
   </div>
 </nav>
@@ -92,16 +98,33 @@
   <div class="max-w-3xl mx-auto px-4 text-center text-sm space-y-3">
     <p>© 2026 प्रभु दयाल कुमावत — ग्राम पंचायत खेड़ीराम अभियान।</p>
     <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-white/60">
-      <a href="index.html" class="hover:text-white">होम</a>
-      <a href="about.html" class="hover:text-white">परिचय</a>
-      <a href="news-updates.html" class="hover:text-white">समाचार</a>
-      <a href="contact.html" class="hover:text-white">संपर्क</a>
       <a href="privacy-policy.html" class="hover:text-white">प्राइवेसी पॉलिसी</a>
       <a href="disclaimer.html" class="hover:text-white">डिस्क्लेमर</a>
       <a href="terms-and-conditions.html" class="hover:text-white">नियम व शर्तें</a>
     </div>
   </div>
 </footer>
+
+<script>
+  function toggleMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const btn = document.getElementById('mobileMenuBtn');
+    const icon = document.getElementById('mobileMenuIcon');
+    const isOpen = panel.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    icon.className = isOpen ? 'fa-solid fa-xmark text-lg' : 'fa-solid fa-bars text-lg';
+  }
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('mobileMenuPanel');
+    const btn = document.getElementById('mobileMenuBtn');
+    if (!panel || panel.classList.contains('hidden')) return;
+    if (!panel.contains(e.target) && !btn.contains(e.target)) {
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
+    }
+  });
+</script>
 
 </body>
 </html>

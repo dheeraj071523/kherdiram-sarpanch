@@ -274,26 +274,44 @@
 
 <!-- ============ STICKY NAVBAR ============ -->
 <nav class="sticky top-0 z-40 nav-glass border-b border-ink/5">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="#main" class="flex items-center gap-3">
-      <img src="candidate-logo.png" alt="प्रभु दयाल कुमावत - अभियान लोगो" class="w-11 h-11 rounded-full ring-2 ring-gold object-cover bg-ink/5" onerror="this.style.display='none'">
-      <div class="leading-tight">
-        <p class="font-heading text-lg text-ink">प्रभु दयाल कुमावत</p>
-        <p class="text-xs text-crimson font-semibold -mt-0.5">सरपंच पद के उम्मीदवार</p>
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <a href="#main" class="flex items-center gap-3 min-w-0">
+      <img src="candidate-logo.png" alt="प्रभु दयाल कुमावत - अभियान लोगो" class="w-11 h-11 rounded-full ring-2 ring-gold object-cover bg-ink/5 flex-shrink-0" onerror="this.style.display='none'">
+      <div class="leading-tight min-w-0">
+        <p class="font-heading text-lg text-ink truncate">प्रभु दयाल कुमावत</p>
+        <p class="text-xs text-crimson font-semibold -mt-0.5 truncate">सरपंच पद के उम्मीदवार</p>
       </div>
     </a>
-    <div class="hidden md:flex items-center gap-7 text-sm font-semibold text-ink/70">
-      <a href="#main" class="hover:text-crimson transition-colors">होम</a>
-      <a href="#sankalp" class="hover:text-crimson transition-colors">मेरे संकल्प</a>
-      <a href="#gatividhiyan" class="hover:text-crimson transition-colors">गतिविधियां</a>
-      <a href="#samarthan" class="hover:text-crimson transition-colors">जुड़ें</a>
-      <a href="#samarthan" class="inline-flex items-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-2.5 rounded-full shadow-lg shadow-crimson/25 hover:shadow-crimson/40 transition-shadow">
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <a href="#samarthan" class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-2.5 rounded-full shadow-lg shadow-crimson/25 hover:shadow-crimson/40 transition-shadow text-sm font-semibold">
+        <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
+      </a>
+      <button onclick="toggleMobileMenu()" id="mobileMenuBtn" aria-expanded="false" aria-controls="mobileMenuPanel" aria-label="मेनू खोलें"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-ink/5 text-ink hover:bg-ink/10 transition-colors">
+        <i id="mobileMenuIcon" class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dropdown menu (all screen sizes) -->
+  <div id="mobileMenuPanel" class="hidden border-t border-ink/5 bg-cream/95 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-3 grid sm:grid-cols-2 gap-x-8 text-sm font-semibold text-ink/75">
+      <div class="flex flex-col">
+        <a href="#main" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
+        <a href="#sankalp" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-list-check w-5 text-crimson"></i> मेरे संकल्प</a>
+        <a href="#gatividhiyan" class="py-3 border-b sm:border-b-0 border-ink/5 flex items-center gap-3"><i class="fa-solid fa-images w-5 text-crimson"></i> गतिविधियां</a>
+      </div>
+      <div class="flex flex-col">
+        <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-user w-5 text-crimson"></i> परिचय</a>
+        <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-newspaper w-5 text-crimson"></i> समाचार</a>
+        <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 pb-4 sm:hidden">
+      <a href="#samarthan" class="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-3 rounded-xl shadow-lg shadow-crimson/25 font-semibold">
         <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
       </a>
     </div>
-    <button onclick="shareWhatsApp()" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-leaf text-white">
-      <i class="fa-brands fa-whatsapp text-lg"></i>
-    </button>
   </div>
 </nav>
 
@@ -601,9 +619,6 @@
   </div>
   <p class="text-center text-white/35 text-xs mt-8">© 2026 प्रभु दयाल कुमावत — ग्राम पंचायत खेड़ीराम अभियान। सर्वाधिकार सुरक्षित।</p>
   <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-white/45 text-xs mt-4 px-4">
-    <a href="about.html" class="hover:text-white">परिचय</a>
-    <a href="news-updates.html" class="hover:text-white">समाचार</a>
-    <a href="contact.html" class="hover:text-white">संपर्क</a>
     <a href="privacy-policy.html" class="hover:text-white">प्राइवेसी पॉलिसी</a>
     <a href="disclaimer.html" class="hover:text-white">डिस्क्लेमर</a>
     <a href="terms-and-conditions.html" class="hover:text-white">नियम व शर्तें</a>
@@ -980,6 +995,26 @@
   })();
 
   // ---------- Sankalp accordion toggle ----------
+  // ---------- Mobile navbar hamburger menu ----------
+  function toggleMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const btn = document.getElementById('mobileMenuBtn');
+    const icon = document.getElementById('mobileMenuIcon');
+    const isOpen = panel.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    icon.className = isOpen ? 'fa-solid fa-xmark text-lg' : 'fa-solid fa-bars text-lg';
+  }
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('mobileMenuPanel');
+    const btn = document.getElementById('mobileMenuBtn');
+    if (!panel || panel.classList.contains('hidden')) return;
+    if (!panel.contains(e.target) && !btn.contains(e.target)) {
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
+    }
+  });
+
   function toggleSankalp() {
     const list = document.getElementById('sankalpList');
     const btn = document.getElementById('sankalpToggle');
