@@ -151,8 +151,11 @@
 
 <script>
   // ---------- Repo config ----------
+  // Activities now live in a SEPARATE repository from the website code.
+  // This repo is intentionally NOT connected to Cloudflare Pages, so every
+  // commit here (new photo/activity) never triggers a site deployment.
   const OWNER = 'dheeraj071523';
-  const REPO = 'kherdiram-sarpanch';
+  const REPO = 'kherdiram-activities';
   const BRANCH = 'main';
   const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
   const RAW_BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;

@@ -752,8 +752,11 @@
   // seen, it never needs to be downloaded again; only genuinely new photos are fetched
   // on a later visit. A lightbox shows each photo at full quality with no cropping.
   (function () {
+    // Activities data + images now live in a separate content-only repository
+    // (never touched by Cloudflare Pages deployments) — only these two lines
+    // needed to change to move the read side over.
     const GATIVIDHI_OWNER = 'dheeraj071523';
-    const GATIVIDHI_REPO = 'kherdiram-sarpanch';
+    const GATIVIDHI_REPO = 'kherdiram-activities';
     const GATIVIDHI_BRANCH = 'main';
     const GATIVIDHI_JSON_URL = `https://cdn.jsdelivr.net/gh/${GATIVIDHI_OWNER}/${GATIVIDHI_REPO}@${GATIVIDHI_BRANCH}/activities/data.json`;
     const GATIVIDHI_DB_NAME = 'kherdiramSarpanchDB';

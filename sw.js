@@ -71,6 +71,12 @@ self.addEventListener("fetch", (event) => {
   // Don't cache calls to the Google Apps Script backend (form submissions)
   if (request.url.includes("script.google.com")) return;
 
+  // Don't cache jsDelivr requests (activities data/images) — index.html already
+  // has its own freshness-check logic (fetch + updatedAt comparison) for this
+  // data, and letting the service worker cache-first it too would silently
+  // re-serve stale activity data even after a successful update check.
+  if (request.url.includes("jsdelivr.net")) return;
+
   const isHTML = request.mode === "navigate" ||
     (request.headers.get("accept") || "").includes("text/html");
 
