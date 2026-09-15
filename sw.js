@@ -4,7 +4,7 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v4";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v5";
 
 // Bump CACHE_NAME (e.g. -v5) whenever you update files, so users
 // automatically get the fresh version instead of a stale cached copy.
@@ -83,8 +83,11 @@ self.addEventListener("fetch", (event) => {
   if (isHTML) {
     // Network-first: always try to fetch the latest page. If that fails
     // (genuinely offline), fall back to the exact cached page, then to
-    // cached index.html, and only as an absolute last resort — if nothing
-    // at all has ever been cached on this device — a dedicated offline page.
+    // cached index.html, then to a dedicated offline page — and if truly
+    // nothing has ever been cached on this device, a minimal inline page
+    // as an absolute last resort, so respondWith() never receives
+    // "undefined" (which the browser shows as its own native error page
+    // instead of anything we control).
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -92,11 +95,28 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           return response;
         })
-        .catch(() =>
-          caches.match(request)
-            .then((cached) => cached || caches.match("./index.html"))
-            .then((cached) => cached || caches.match(OFFLINE_URL))
-        )
+        .catch(async () => {
+          const exact = await caches.match(request);
+          if (exact) return exact;
+          const home = await caches.match("./index.html");
+          if (home) return home;
+          const offline = await caches.match(OFFLINE_URL);
+          if (offline) return offline;
+          return new Response(
+            '<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+            '<title>ऑफ़लाइन</title></head>' +
+            '<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;' +
+            'text-align:center;padding:24px;font-family:Arial,sans-serif;background:#8C1523;color:#fff;">' +
+            '<div><h1 style="font-size:1.3rem;">आप अभी इंटरनेट से जुड़े नहीं हैं</h1>' +
+            '<p style="color:rgba(255,255,255,0.75);">कृपया इंटरनेट से जुड़कर एक बार साइट खोलें, ' +
+            'ताकि यह आगे से बिना इंटरनेट भी खुल सके।</p>' +
+            '<button onclick="location.reload()" style="margin-top:10px;padding:12px 28px;border:none;' +
+            'border-radius:999px;background:linear-gradient(90deg,#E08E1E,#F5B94A);color:#fff;' +
+            'font-weight:700;font-size:1rem;">फिर से कोशिश करें</button></div></body></html>',
+            { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+          );
+        })
     );
   } else {
     // Cache-first for images, fonts, CSS, JS, etc. — fast repeat loads
@@ -107,7 +127,7 @@ self.addEventListener("fetch", (event) => {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           return response;
-        }).catch(() => cached);
+        }).catch(() => cached || new Response("", { status: 504, statusText: "Offline" }));
       })
     );
   }

@@ -292,28 +292,34 @@
       </button>
     </div>
   </div>
-
-  <!-- Dropdown menu (all screen sizes) -->
-  <div id="mobileMenuPanel" class="hidden border-t border-ink/5 bg-cream/95 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-3 grid sm:grid-cols-2 gap-x-8 text-sm font-semibold text-ink/75">
-      <div class="flex flex-col">
-        <a href="#main" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
-        <a href="#sankalp" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-list-check w-5 text-crimson"></i> मेरे संकल्प</a>
-        <a href="#gatividhiyan" class="py-3 border-b sm:border-b-0 border-ink/5 flex items-center gap-3"><i class="fa-solid fa-images w-5 text-crimson"></i> गतिविधियां</a>
-      </div>
-      <div class="flex flex-col">
-        <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-user w-5 text-crimson"></i> परिचय</a>
-        <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-newspaper w-5 text-crimson"></i> समाचार</a>
-        <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
-      </div>
-    </div>
-    <div class="max-w-6xl mx-auto px-4 pb-4 sm:hidden">
-      <a href="#samarthan" class="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-3 rounded-xl shadow-lg shadow-crimson/25 font-semibold">
-        <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
-      </a>
-    </div>
-  </div>
 </nav>
+
+<!-- Backdrop -->
+<div id="mobileMenuBackdrop" onclick="closeMobileMenu()" class="fixed inset-0 bg-ink/40 z-[70] hidden"></div>
+
+<!-- Right-side sliding menu drawer -->
+<div id="mobileMenuPanel"
+  class="fixed top-0 right-0 h-full w-72 max-w-[82%] bg-cream z-[80] shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+  <div class="flex items-center justify-between p-4 border-b border-ink/5 flex-shrink-0">
+    <span class="font-heading text-lg text-ink">मेनू</span>
+    <button onclick="closeMobileMenu()" aria-label="मेनू बंद करें" class="w-9 h-9 rounded-full bg-ink/5 hover:bg-ink/10 flex items-center justify-center text-ink">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <div class="flex-1 overflow-y-auto px-4 py-2 flex flex-col text-sm font-semibold text-ink/75">
+    <a href="#main" onclick="closeMobileMenu()" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
+    <a href="#sankalp" onclick="closeMobileMenu()" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-list-check w-5 text-crimson"></i> मेरे संकल्प</a>
+    <a href="#gatividhiyan" onclick="closeMobileMenu()" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-images w-5 text-crimson"></i> गतिविधियां</a>
+    <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-user w-5 text-crimson"></i> परिचय</a>
+    <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-newspaper w-5 text-crimson"></i> समाचार</a>
+    <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
+  </div>
+  <div class="p-4 border-t border-ink/5 flex-shrink-0">
+    <a href="#samarthan" onclick="closeMobileMenu()" class="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-crimson to-gold text-white px-5 py-3 rounded-xl shadow-lg shadow-crimson/25 font-semibold">
+      <i class="fa-solid fa-hand-fist"></i> समर्थन दर्ज करें
+    </a>
+  </div>
+</div>
 
 <main id="main">
 
@@ -885,7 +891,8 @@
       });
     }
 
-    async function renderGatividhi(data) {
+    async function renderGatividhi(data, options) {
+      const isFreshFromServer = !!(options && options.freshFromServer);
       const scroll = document.getElementById('gatividhiScroll');
       const emptyMsg = document.getElementById('gatividhiEmpty');
       if (!scroll) return;
@@ -927,16 +934,26 @@
       }).join('');
 
       cacheMissingImages(items);
-      pruneOrphanedImageBlobs(items.map((i) => i.image));
+
+      // IMPORTANT: only ever delete cached images when we KNOW this list came
+      // from a confirmed, just-fetched server response — never from the
+      // locally-cached copy shown for instant rendering. The local cache can
+      // be a step behind (e.g. right after a new upload before this device's
+      // cache has updated), and pruning against a stale list would wrongly
+      // delete still-valid cached photos, making them vanish when offline.
+      if (isFreshFromServer) {
+        pruneOrphanedImageBlobs(items.map((i) => i.image));
+      }
     }
 
     async function initGatividhi() {
       const scroll = document.getElementById('gatividhiScroll');
       if (!scroll) return;
 
-      // 1) Show cached data instantly — no network wait, no flash of empty content
+      // 1) Show cached data instantly — no network wait, no flash of empty content.
+      //    Never prune here — this list can be a step behind the real server state.
       const cached = await getCachedGatividhi();
-      if (cached) await renderGatividhi(cached);
+      if (cached) await renderGatividhi(cached, { freshFromServer: false });
 
       // 2) One lightweight background check for anything new (served via jsDelivr's
       //    CDN, not GitHub's API, so this never counts against any API rate limit)
@@ -945,7 +962,7 @@
         if (!res.ok) return;
         const fresh = await res.json();
         if (!cached || cached.updatedAt !== fresh.updatedAt) {
-          await renderGatividhi(fresh);
+          await renderGatividhi(fresh, { freshFromServer: true });
           setCachedGatividhi(fresh);
         }
       } catch (e) {
@@ -999,24 +1016,33 @@
 
   // ---------- Sankalp accordion toggle ----------
   // ---------- Mobile navbar hamburger menu ----------
+  function openMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const btn = document.getElementById('mobileMenuBtn');
+    panel.classList.remove('translate-x-full');
+    backdrop.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    document.getElementById('mobileMenuIcon').className = 'fa-solid fa-xmark text-lg';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const btn = document.getElementById('mobileMenuBtn');
+    panel.classList.add('translate-x-full');
+    backdrop.classList.add('hidden');
+    btn.setAttribute('aria-expanded', 'false');
+    document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
+    document.body.style.overflow = '';
+  }
+
   function toggleMobileMenu() {
     const panel = document.getElementById('mobileMenuPanel');
-    const btn = document.getElementById('mobileMenuBtn');
-    const icon = document.getElementById('mobileMenuIcon');
-    const isOpen = panel.classList.toggle('hidden') === false;
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    icon.className = isOpen ? 'fa-solid fa-xmark text-lg' : 'fa-solid fa-bars text-lg';
+    if (panel.classList.contains('translate-x-full')) openMobileMenu();
+    else closeMobileMenu();
   }
-  document.addEventListener('click', (e) => {
-    const panel = document.getElementById('mobileMenuPanel');
-    const btn = document.getElementById('mobileMenuBtn');
-    if (!panel || panel.classList.contains('hidden')) return;
-    if (!panel.contains(e.target) && !btn.contains(e.target)) {
-      panel.classList.add('hidden');
-      btn.setAttribute('aria-expanded', 'false');
-      document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
-    }
-  });
 
   function toggleSankalp() {
     const list = document.getElementById('sankalpList');

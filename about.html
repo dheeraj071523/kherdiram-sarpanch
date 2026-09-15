@@ -40,15 +40,27 @@
       <i id="mobileMenuIcon" class="fa-solid fa-bars text-lg"></i>
     </button>
   </div>
-  <div id="mobileMenuPanel" class="hidden border-t border-ink/5 bg-cream/95 backdrop-blur-lg">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col text-sm font-semibold text-ink/75">
-      <a href="index.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
-      <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3 text-crimson"><i class="fa-solid fa-user w-5"></i> परिचय</a>
-      <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-newspaper w-5 text-crimson"></i> समाचार</a>
-      <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
-    </div>
-  </div>
 </nav>
+
+<!-- Backdrop -->
+<div id="mobileMenuBackdrop" onclick="closeMobileMenu()" class="fixed inset-0 bg-ink/40 z-[70] hidden"></div>
+
+<!-- Right-side sliding menu drawer -->
+<div id="mobileMenuPanel"
+  class="fixed top-0 right-0 h-full w-72 max-w-[82%] bg-cream z-[80] shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+  <div class="flex items-center justify-between p-4 border-b border-ink/5 flex-shrink-0">
+    <span class="font-heading text-lg text-ink">मेनू</span>
+    <button onclick="closeMobileMenu()" aria-label="मेनू बंद करें" class="w-9 h-9 rounded-full bg-ink/5 hover:bg-ink/10 flex items-center justify-center text-ink">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <div class="flex-1 overflow-y-auto px-4 py-2 flex flex-col text-sm font-semibold text-ink/75">
+    <a href="index.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-house w-5 text-crimson"></i> होम</a>
+    <a href="about.html" class="py-3 border-b border-ink/5 flex items-center gap-3 text-crimson"><i class="fa-solid fa-user w-5"></i> परिचय</a>
+    <a href="news-updates.html" class="py-3 border-b border-ink/5 flex items-center gap-3"><i class="fa-solid fa-newspaper w-5 text-crimson"></i> समाचार</a>
+    <a href="contact.html" class="py-3 flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-crimson"></i> संपर्क</a>
+  </div>
+</div>
 
 <main class="max-w-3xl mx-auto px-4 py-12 sm:py-16">
   <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10">
@@ -89,24 +101,31 @@
 </footer>
 
 <script>
+  function openMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const btn = document.getElementById('mobileMenuBtn');
+    panel.classList.remove('translate-x-full');
+    backdrop.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    document.getElementById('mobileMenuIcon').className = 'fa-solid fa-xmark text-lg';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileMenu() {
+    const panel = document.getElementById('mobileMenuPanel');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const btn = document.getElementById('mobileMenuBtn');
+    panel.classList.add('translate-x-full');
+    backdrop.classList.add('hidden');
+    btn.setAttribute('aria-expanded', 'false');
+    document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
+    document.body.style.overflow = '';
+  }
   function toggleMobileMenu() {
     const panel = document.getElementById('mobileMenuPanel');
-    const btn = document.getElementById('mobileMenuBtn');
-    const icon = document.getElementById('mobileMenuIcon');
-    const isOpen = panel.classList.toggle('hidden') === false;
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    icon.className = isOpen ? 'fa-solid fa-xmark text-lg' : 'fa-solid fa-bars text-lg';
+    if (panel.classList.contains('translate-x-full')) openMobileMenu();
+    else closeMobileMenu();
   }
-  document.addEventListener('click', (e) => {
-    const panel = document.getElementById('mobileMenuPanel');
-    const btn = document.getElementById('mobileMenuBtn');
-    if (!panel || panel.classList.contains('hidden')) return;
-    if (!panel.contains(e.target) && !btn.contains(e.target)) {
-      panel.classList.add('hidden');
-      btn.setAttribute('aria-expanded', 'false');
-      document.getElementById('mobileMenuIcon').className = 'fa-solid fa-bars text-lg';
-    }
-  });
 </script>
 
 </body>
