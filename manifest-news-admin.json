@@ -1,0 +1,19 @@
+{
+  "name": "समाचार Admin — प्रभु दयाल कुमावत",
+  "short_name": "समाचार Admin",
+  "description": "प्रभु दयाल कुमावत अभियान — समाचार पोस्ट जोड़ने/एडिट करने के लिए एडमिन पैनल",
+  "start_url": "./admin-news.html",
+  "scope": "./admin-news.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFFBF5",
+  "theme_color": "#991B1B",
+  "lang": "hi-IN",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

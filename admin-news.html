@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — समाचार प्रबंधन</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#991B1B">
+<link rel="manifest" href="manifest-news-admin.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="समाचार Admin">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        crimson: { DEFAULT: '#B31E2E', dark: '#8C1523' },
+        gold: { DEFAULT: '#E08E1E', dark: '#B36F0F' },
+        leaf: { DEFAULT: '#0F9D58', dark: '#0B7A44' },
+        cream: '#FFFBF5', ink: '#1E1B18'
+      },
+      fontFamily: { heading: ['"Tiro Devanagari Hindi"', 'serif'], body: ['"Hind"', 'sans-serif'] }
+    } }
+  }
+</script>
+<style>
+  body { font-family: 'Hind', sans-serif; background: #FFFBF5; color: #1E1B18; }
+  h1, h2, .font-heading { font-family: 'Tiro Devanagari Hindi', serif; }
+  .grad-card { position: relative; border-radius: 1.25rem; padding: 1px;
+    background: linear-gradient(135deg, rgba(179,30,46,0.35), rgba(224,142,30,0.35), rgba(15,157,88,0.35)); }
+  .grad-card > div { border-radius: calc(1.25rem - 1px); background: #FFFFFF; height: 100%; }
+  .btn-shine { position: relative; overflow: hidden; }
+  .btn-shine::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+    transform: skewX(-20deg); animation: shine 3.4s ease-in-out infinite;
+  }
+  @keyframes shine { 0% { left: -60%; } 35% { left: 130%; } 100% { left: 130%; } }
+  @media (prefers-reduced-motion: reduce) { .btn-shine::after { animation: none; } }
+</style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <header class="bg-gradient-to-br from-crimson via-crimson-dark to-ink">
+    <div class="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between gap-3">
+      <div>
+        <p class="text-gold-light text-xs font-semibold tracking-wide">ADMIN PANEL</p>
+        <h1 class="font-heading text-white text-2xl">समाचार प्रबंधन</h1>
+      </div>
+      <button id="installBtn" onclick="triggerInstall()" class="hidden flex-shrink-0 inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-4 py-2.5 rounded-full text-sm font-semibold shadow-lg">
+        <i class="fa-solid fa-download"></i> Install
+      </button>
+    </div>
+  </header>
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+
+    <div class="bg-crimson/5 border border-crimson/20 rounded-2xl p-4 mb-6 text-sm text-ink/80 flex gap-3">
+      <i class="fa-solid fa-shield-halved text-crimson mt-0.5"></i>
+      <div>
+        <p class="font-semibold text-crimson mb-1">यह पेज पब्लिक ना करें</p>
+        <p>नीचे जो Token डालेंगे वो आपकी repository का पासवर्ड जैसा है — इसे कभी किसी को ना दें।</p>
+      </div>
+    </div>
+
+    <div class="grad-card mb-6"><div class="p-5">
+      <label for="tokenInput" class="block text-sm font-semibold mb-1.5">GitHub Personal Access Token</label>
+      <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+        class="w-full rounded-xl border border-ink/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+      <label class="flex items-center gap-2 mt-2 text-sm text-ink/60">
+        <input type="checkbox" id="rememberToken" class="rounded">
+        इस डिवाइस पर याद रखें (सिर्फ अपने निजी फोन/लैपटॉप पर ही चुनें)
+      </label>
+      <p class="text-xs text-ink/40 mt-2">यह वही Token काम करेगा जो गतिविधियां-Admin में इस्तेमाल होता है (kherdiram-activities repo के लिए)।</p>
+    </div></div>
+
+    <div class="grad-card mb-8"><div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="formTitle" class="font-heading text-lg">नई समाचार पोस्ट जोड़ें</h2>
+        <button type="button" id="cancelEditBtn" onclick="cancelEdit()" class="hidden text-xs font-semibold text-crimson">
+          <i class="fa-solid fa-xmark ml-1"></i> रद्द करें
+        </button>
+      </div>
+      <form id="addForm" onsubmit="handleSubmitNews(event)" class="space-y-4">
+        <div>
+          <label for="titleInput" class="block text-sm font-semibold mb-1.5">शीर्षक</label>
+          <input type="text" id="titleInput" required
+            class="w-full rounded-xl border border-ink/15 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold text-sm"
+            placeholder="जैसे: वार्ड नंबर 4 में जनसभा का आयोजन">
+        </div>
+        <div>
+          <label for="contentInput" class="block text-sm font-semibold mb-1.5">पूरी खबर</label>
+          <textarea id="contentInput" rows="6" required
+            class="w-full rounded-xl border border-ink/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold resize-none text-sm"
+            placeholder="पूरी खबर यहाँ लिखें। एक पैराग्राफ खत्म होने पर एक खाली लाइन छोड़ें, अगला पैराग्राफ अपने आप अलग दिखेगा।"></textarea>
+        </div>
+        <div id="currentImagePreviewWrap" class="hidden">
+          <img id="currentImagePreview" class="w-full h-40 object-cover rounded-xl mb-2" alt="">
+          <p class="text-xs text-ink/45 mb-2">मौजूदा फोटो — नई फोटो सिर्फ तभी चुनें जब आप इसे बदलना चाहें</p>
+        </div>
+        <div>
+          <label for="imageInput" class="block text-sm font-semibold mb-1.5">
+            <span id="imageInputLabel">फोटो (वैकल्पिक)</span>
+          </label>
+          <input type="file" id="imageInput" accept="image/*"
+            class="w-full text-sm rounded-xl border border-ink/15 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold">
+        </div>
+        <div>
+          <label for="dateInput" class="block text-sm font-semibold mb-1.5">तारीख़</label>
+          <input type="date" id="dateInput" required
+            class="w-full rounded-xl border border-ink/15 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+        </div>
+        <button type="submit" id="submitBtn"
+          class="btn-shine w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-crimson via-gold to-leaf text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-crimson/25">
+          <i class="fa-solid fa-upload"></i> <span id="submitBtnText">पोस्ट जोड़ें</span>
+        </button>
+        <p id="addStatus" class="text-sm text-center"></p>
+      </form>
+    </div></div>
+
+    <div class="grad-card"><div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-heading text-lg">मौजूदा समाचार</h2>
+        <button onclick="loadNews()" class="text-sm text-crimson font-medium"><i class="fa-solid fa-rotate-right ml-1"></i> रीफ्रेश करें</button>
+      </div>
+      <div id="newsList" class="space-y-2">
+        <p class="text-ink/40 text-sm">लोड हो रहा है...</p>
+      </div>
+    </div></div>
+
+  </div>
+
+<script>
+  // ---------- Repo config — same content repo as activities, different folder ----------
+  const OWNER = 'dheeraj071523';
+  const REPO = 'kherdiram-activities';
+  const BRANCH = 'main';
+  const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
+  const RAW_BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
+  const PURGE_BASE = `https://purge.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}`;
+  const DATA_PATH = 'news/data.json';
+
+  let currentNews = [];
+  let editingId = null;
+  let editingOldImage = null;
+
+  function getToken() {
+    const remember = document.getElementById('rememberToken').checked;
+    const val = document.getElementById('tokenInput').value.trim();
+    try {
+      if (remember && val) localStorage.setItem('gh_pat_kherdiram', val);
+      if (!remember) localStorage.removeItem('gh_pat_kherdiram');
+    } catch (e) { /* private mode etc. */ }
+    return val;
+  }
+
+  window.addEventListener('load', () => {
+    try {
+      const saved = localStorage.getItem('gh_pat_kherdiram');
+      if (saved) {
+        document.getElementById('tokenInput').value = saved;
+        document.getElementById('rememberToken').checked = true;
+      }
+    } catch (e) { /* private mode etc. */ }
+    loadNews();
+  });
+
+  function authHeaders(token) {
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+  }
+
+  function utf8ToBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach((b) => { binary += String.fromCharCode(b); });
+    return btoa(binary);
+  }
+  function base64ToUtf8(b64) {
+    const binary = atob(b64.replace(/\n/g, ''));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  function sanitizeFilename(name) {
+    return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  async function readJsonFile(token) {
+    const res = await fetch(`${API_ROOT}/contents/${DATA_PATH}`, { headers: authHeaders(token) });
+    if (!res.ok) throw new Error('news/data.json नहीं मिली (स्टेटस ' + res.status + ') — पहले वह फाइल repo में बना लें।');
+    const json = await res.json();
+    return JSON.parse(base64ToUtf8(json.content));
+  }
+
+  // Same atomic single-commit helper as admin-activities.html — combines photo +
+  // JSON updates into ONE commit so this repo's push history stays clean and
+  // (since this repo isn't connected to Cloudflare Pages) never deploys anything.
+  async function commitFiles(token, message, { upserts = [], deletePaths = [] }) {
+    const h = { ...authHeaders(token), 'Content-Type': 'application/json' };
+
+    const refRes = await fetch(`${API_ROOT}/git/ref/heads/${BRANCH}`, { headers: authHeaders(token) });
+    if (!refRes.ok) throw new Error('branch जानकारी नहीं मिली (टोकन की permission जांचें)');
+    const refJson = await refRes.json();
+    const latestCommitSha = refJson.object.sha;
+
+    const commitRes = await fetch(`${API_ROOT}/git/commits/${latestCommitSha}`, { headers: authHeaders(token) });
+    if (!commitRes.ok) throw new Error('मौजूदा commit नहीं मिला');
+    const commitJson = await commitRes.json();
+    const baseTreeSha = commitJson.tree.sha;
+
+    const treeEntries = [];
+    for (const file of upserts) {
+      const blobRes = await fetch(`${API_ROOT}/git/blobs`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({ content: file.base64Content, encoding: 'base64' })
+      });
+      if (!blobRes.ok) throw new Error('फाइल तैयार नहीं हो पाई: ' + file.path);
+      const blobJson = await blobRes.json();
+      treeEntries.push({ path: file.path, mode: '100644', type: 'blob', sha: blobJson.sha });
+    }
+    for (const path of deletePaths) {
+      treeEntries.push({ path, mode: '100644', type: 'blob', sha: null });
+    }
+
+    const treeRes = await fetch(`${API_ROOT}/git/trees`, {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+    });
+    if (!treeRes.ok) throw new Error('बदलाव तैयार नहीं हो पाए');
+    const treeJson = await treeRes.json();
+
+    const newCommitRes = await fetch(`${API_ROOT}/git/commits`, {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ message, tree: treeJson.sha, parents: [latestCommitSha] })
+    });
+    if (!newCommitRes.ok) throw new Error('commit नहीं बन पाई');
+    const newCommitJson = await newCommitRes.json();
+
+    const updateRefRes = await fetch(`${API_ROOT}/git/refs/heads/${BRANCH}`, {
+      method: 'PATCH', headers: h,
+      body: JSON.stringify({ sha: newCommitJson.sha })
+    });
+    if (!updateRefRes.ok) throw new Error('repo अपडेट नहीं हो पाई');
+
+    return newCommitJson.sha;
+  }
+
+  async function purgeJsDelivr(path) {
+    try { await fetch(`${PURGE_BASE}/${path}`); } catch (e) { /* best-effort */ }
+  }
+
+  function startEditNews(id) {
+    const item = currentNews.find((i) => i.id === id);
+    if (!item) return;
+    editingId = id;
+    editingOldImage = item.image || null;
+
+    document.getElementById('formTitle').textContent = 'समाचार संपादित करें';
+    document.getElementById('submitBtnText').textContent = 'अपडेट करें';
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+    document.getElementById('titleInput').value = item.title || '';
+    document.getElementById('contentInput').value = item.content || '';
+    document.getElementById('dateInput').value = item.date || '';
+
+    const previewWrap = document.getElementById('currentImagePreviewWrap');
+    if (item.image) {
+      document.getElementById('currentImagePreview').src = `${RAW_BASE}/${item.image}`;
+      previewWrap.classList.remove('hidden');
+    } else {
+      previewWrap.classList.add('hidden');
+    }
+
+    window.scrollTo({ top: document.getElementById('addForm').getBoundingClientRect().top + window.scrollY - 20, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    editingOldImage = null;
+    document.getElementById('addForm').reset();
+    document.getElementById('formTitle').textContent = 'नई समाचार पोस्ट जोड़ें';
+    document.getElementById('submitBtnText').textContent = 'पोस्ट जोड़ें';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
+    document.getElementById('currentImagePreviewWrap').classList.add('hidden');
+    document.getElementById('addStatus').textContent = '';
+  }
+
+  async function handleSubmitNews(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('addStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    statusEl.textContent = '';
+
+    const token = getToken();
+    if (!token) {
+      statusEl.textContent = '⚠️ पहले अपना GitHub Token डालें।';
+      statusEl.className = 'text-sm text-center text-crimson';
+      return;
+    }
+
+    const title = document.getElementById('titleInput').value.trim();
+    const content = document.getElementById('contentInput').value.trim();
+    const date = document.getElementById('dateInput').value;
+    const fileInput = document.getElementById('imageInput');
+    const newFile = fileInput.files[0] || null;
+
+    if (!title || !content || !date) {
+      statusEl.textContent = '⚠️ शीर्षक, खबर और तारीख़ — सभी भरें।';
+      statusEl.className = 'text-sm text-center text-crimson';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = editingId ? 'अपडेट हो रहा है...' : 'अपलोड हो रहा है...';
+
+    try {
+      const data = await readJsonFile(token);
+      data.items = data.items || [];
+      const upserts = [];
+      const deletePaths = [];
+      let imagePath = editingId ? editingOldImage : null;
+
+      if (newFile) {
+        const timestamp = Date.now();
+        const ext = newFile.name.includes('.') ? newFile.name.split('.').pop() : 'jpg';
+        const baseName = sanitizeFilename(newFile.name.replace(/\.[^.]+$/, ''));
+        imagePath = `news/images/${timestamp}-${baseName}.${ext}`;
+        upserts.push({ path: imagePath, base64Content: await fileToBase64(newFile) });
+        if (editingId && editingOldImage && editingOldImage !== imagePath) {
+          deletePaths.push(editingOldImage);
+        }
+      }
+
+      if (editingId) {
+        const idx = data.items.findIndex((i) => i.id === editingId);
+        if (idx === -1) throw new Error('यह पोस्ट अब मौजूद नहीं है — शायद पहले ही हट चुकी है');
+        data.items[idx] = { ...data.items[idx], title, content, date, image: imagePath || '' };
+      } else {
+        const timestamp = Date.now();
+        data.items.push({ id: 'news_' + timestamp, title, content, date, image: imagePath || '', timestamp });
+      }
+      data.updatedAt = new Date().toISOString();
+      upserts.push({ path: DATA_PATH, base64Content: utf8ToBase64(JSON.stringify(data, null, 2)) });
+
+      const commitMsg = editingId
+        ? `समाचार अपडेट किया: ${title.slice(0, 40)}`
+        : `नई समाचार पोस्ट जोड़ी: ${title.slice(0, 40)}`;
+      await commitFiles(token, commitMsg, { upserts, deletePaths });
+      await purgeJsDelivr(DATA_PATH);
+
+      statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।';
+      statusEl.className = 'text-sm text-center text-leaf-dark font-medium';
+      cancelEdit();
+      loadNews();
+    } catch (err) {
+      statusEl.textContent = '❌ ' + err.message;
+      statusEl.className = 'text-sm text-center text-crimson';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent = editingId ? 'अपडेट करें' : 'पोस्ट जोड़ें';
+    }
+  }
+
+  async function loadNews() {
+    const listEl = document.getElementById('newsList');
+    listEl.innerHTML = '<p class="text-ink/40 text-sm">लोड हो रहा है...</p>';
+    try {
+      const res = await fetch(`${RAW_BASE}/${DATA_PATH}?t=${Date.now()}`);
+      if (!res.ok) throw new Error('news/data.json नहीं मिली — पहले वह फाइल repo में बनाएं।');
+      const data = await res.json();
+      currentNews = data.items || [];
+      const items = currentNews.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      if (items.length === 0) {
+        listEl.innerHTML = '<p class="text-ink/40 text-sm">अभी कोई समाचार पोस्ट नहीं जोड़ी गई।</p>';
+        return;
+      }
+      listEl.innerHTML = items.map((item) => `
+        <div class="flex items-center gap-3 border border-ink/10 rounded-xl p-3">
+          ${item.image
+            ? `<img src="${RAW_BASE}/${item.image}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0" alt="" loading="lazy">`
+            : `<span class="w-16 h-16 rounded-lg bg-ink/5 flex items-center justify-center text-ink/30 flex-shrink-0"><i class="fa-solid fa-newspaper"></i></span>`}
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink/90 truncate font-semibold">${escapeHtml(item.title)}</p>
+            <p class="text-xs text-ink/45">${escapeHtml(item.date)}</p>
+          </div>
+          <button onclick="startEditNews('${item.id}')" class="text-gold-dark hover:bg-gold/10 w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center" title="संपादित करें">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button onclick="handleDeleteNews('${item.id}')" class="text-crimson hover:bg-crimson/10 w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center" title="हटाएं">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    } catch (err) {
+      listEl.innerHTML = `<p class="text-crimson text-sm">लिस्ट लोड नहीं हो पाई: ${escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  async function handleDeleteNews(id) {
+    const token = getToken();
+    if (!token) { alert('पहले GitHub Token डालें।'); return; }
+    if (!confirm('क्या आप वाकई इस समाचार पोस्ट को हटाना चाहते हैं?')) return;
+
+    try {
+      const data = await readJsonFile(token);
+      const item = (data.items || []).find((i) => i.id === id);
+      data.items = (data.items || []).filter((i) => i.id !== id);
+      data.updatedAt = new Date().toISOString();
+
+      const upserts = [{ path: DATA_PATH, base64Content: utf8ToBase64(JSON.stringify(data, null, 2)) }];
+      const deletePaths = item && item.image ? [item.image] : [];
+
+      await commitFiles(token, `समाचार हटाया: ${id}`, { upserts, deletePaths });
+      await purgeJsDelivr(DATA_PATH);
+      if (editingId === id) cancelEdit();
+      loadNews();
+    } catch (err) {
+      alert('हटाने में समस्या: ' + err.message);
+    }
+  }
+
+  // ---------- PWA install ----------
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn')?.classList.remove('hidden');
+  });
+  function triggerInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
+    } else {
+      alert('इंस्टॉल के लिए ब्राउज़र मेनू से "Add to Home Screen" चुनें।');
+    }
+  }
+</script>
+
+</body>
+</html>
