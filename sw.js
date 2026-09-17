@@ -4,15 +4,14 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v5";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v6";
 
-// Bump CACHE_NAME (e.g. -v5) whenever you update files, so users
-// automatically get the fresh version instead of a stale cached copy.
-// NOTE: this mainly matters for images/icons. The pages themselves are
-// fetched network-first below, so they self-update on every online visit
-// regardless of this version number — see index.html's registration code
-// for the piece that forces the browser to check for a new sw.js quickly
-// instead of waiting for its normal ~24 hour update-check throttle.
+// Bump CACHE_NAME (e.g. -v7) whenever you update any of the STATIC SITE files
+// listed below (index.html, about.html, sw.js itself, images, icons, etc.) so
+// returning visitors get the fresh copy instead of a stale cached one.
+// You do NOT need to bump this for गतिविधियां/समाचार content updates — those
+// live in a separate repo and are served live via jsDelivr, never touching
+// this cache at all.
 
 const OFFLINE_URL = "./offline.html";
 
@@ -32,18 +31,31 @@ const PRECACHE_URLS = [
   "./icon-192.png",
   "./icon-512.png"
 ];
-// NOTE: admin-activities.html and manifest-admin.json are intentionally
-// NOT in this list — there's no benefit to pre-loading the admin tool for
-// every regular visitor, so it only gets cached if/when someone actually opens it.
+// NOTE: admin-activities.html, admin-news.html and their manifests are
+// intentionally NOT in this list — there's no benefit to pre-loading the
+// admin tools for every regular visitor, so they only get cached if/when
+// someone actually opens them.
 
 // ---------- INSTALL: pre-cache core files ----------
+// IMPORTANT: each file is cached with its OWN try/catch, on purpose — a
+// single cache.addAll(PRECACHE_URLS) call is all-or-nothing: if even one
+// URL in the list ever fails to fetch (a brief network hiccup, a timing
+// issue right after deploy, etc.), the ENTIRE precache silently fails and
+// NOTHING gets cached — which is exactly what caused only manually-visited
+// pages to work offline, instead of the whole site as intended. Caching
+// files one at a time means one failure can never take the others down.
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS).catch((err) => {
-        // Don't fail install if an optional asset (e.g. photo not uploaded yet) is missing
-        console.warn("Precache warning:", err);
-      }))
+      .then((cache) =>
+        Promise.all(
+          PRECACHE_URLS.map((url) =>
+            cache.add(url).catch((err) => {
+              console.warn("Precache failed for", url, err);
+            })
+          )
+        )
+      )
       .then(() => self.skipWaiting())
   );
 });
