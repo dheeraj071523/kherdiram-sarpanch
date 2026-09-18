@@ -89,6 +89,111 @@
 </footer>
 
 <script>
+  // ---------- सूचनाएं (Notification Bell) — same feed as index.html ----------
+  (function () {
+    const OWNER = 'dheeraj071523';
+    const REPO = 'kherdiram-activities';
+    const BRANCH = 'main';
+    const ACTIVITIES_URL = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/activities/data.json`;
+    const NEWS_URL = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/news/data.json`;
+    const LAST_SEEN_KEY = 'kherdiramNotifLastSeen';
+    const HINDI_MONTHS = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+    let mergedFeed = [];
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+    function formatDateHindi(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-').map(Number);
+      const y = parts[0], m = parts[1], d = parts[2];
+      if (!y || !m || !d) return dateStr;
+      return `${d} ${HINDI_MONTHS[m - 1]} ${y}`;
+    }
+    function getLastSeen() {
+      try { return Number(localStorage.getItem(LAST_SEEN_KEY)) || 0; } catch (e) { return 0; }
+    }
+    function setLastSeen(ts) {
+      try { localStorage.setItem(LAST_SEEN_KEY, String(ts)); } catch (e) { /* private mode etc. */ }
+    }
+    function updateAppBadge(count) {
+      if (!('setAppBadge' in navigator)) return;
+      if (count > 0) navigator.setAppBadge(count).catch(() => {});
+      else if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+    }
+    async function fetchJson(url) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) { return null; }
+    }
+    async function loadFeed() {
+      const [activities, news] = await Promise.all([fetchJson(ACTIVITIES_URL), fetchJson(NEWS_URL)]);
+      const activityItems = (activities?.items || []).map((i) => ({
+        type: 'activity', id: i.id, title: 'नई गतिविधि', text: i.description || '', date: i.date, timestamp: i.timestamp || 0
+      }));
+      const newsItems = (news?.items || []).map((i) => ({
+        type: 'news', id: i.id, title: 'नई खबर', text: i.title || '', date: i.date, timestamp: i.timestamp || 0
+      }));
+      mergedFeed = [...activityItems, ...newsItems].sort((a, b) => b.timestamp - a.timestamp).slice(0, 30);
+      renderBell();
+    }
+    function renderBell() {
+      const lastSeen = getLastSeen();
+      const unseenCount = mergedFeed.filter((n) => n.timestamp > lastSeen).length;
+      const badge = document.getElementById('notifBellBadge');
+      if (badge) {
+        if (unseenCount > 0) { badge.textContent = unseenCount > 9 ? '9+' : String(unseenCount); badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+      }
+      updateAppBadge(unseenCount);
+      const listEl = document.getElementById('notifBellList');
+      if (!listEl) return;
+      if (mergedFeed.length === 0) {
+        listEl.innerHTML = '<p class="text-center text-ink/40 text-sm py-8">अभी कोई सूचना नहीं है।</p>';
+        return;
+      }
+      listEl.innerHTML = mergedFeed.map((n) => {
+        const isUnseen = n.timestamp > lastSeen;
+        const icon = n.type === 'activity' ? 'fa-images' : 'fa-newspaper';
+        const iconColor = n.type === 'activity' ? 'from-crimson to-gold' : 'from-leaf to-leaf-dark';
+        const targetHref = n.type === 'activity' ? 'index.html#gatividhiyan' : `news-updates.html#${n.id}`;
+        return `
+        <a href="${targetHref}"
+          class="flex items-start gap-3 p-4 border-b border-ink/5 hover:bg-ink/[0.02] transition-colors ${isUnseen ? 'bg-gold/5' : ''}">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-br ${iconColor} text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i class="fa-solid ${icon} text-sm"></i>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-ink/50">${n.title}${isUnseen ? ' <span class="text-crimson">●</span>' : ''}</p>
+            <p class="text-sm text-ink/85 leading-snug line-clamp-2">${escapeHtml(n.text)}</p>
+            <p class="text-[11px] text-ink/40 mt-1">${escapeHtml(formatDateHindi(n.date))}</p>
+          </div>
+        </a>`;
+      }).join('');
+    }
+    window.toggleNotifBell = function () {
+      const panel = document.getElementById('notifBellPanel');
+      if (panel.classList.contains('hidden')) openNotifBell();
+      else closeNotifBell();
+    };
+    window.openNotifBell = function () {
+      document.getElementById('notifBellPanel')?.classList.remove('hidden');
+      document.getElementById('notifBellBackdrop')?.classList.remove('hidden');
+      document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'true');
+      if (mergedFeed.length > 0) { setLastSeen(mergedFeed[0].timestamp); renderBell(); }
+    };
+    window.closeNotifBell = function () {
+      document.getElementById('notifBellPanel')?.classList.add('hidden');
+      document.getElementById('notifBellBackdrop')?.classList.add('hidden');
+      document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
+    };
+    window.addEventListener('load', loadFeed);
+  })();
+
   function openMobileMenu() {
     const panel = document.getElementById('mobileMenuPanel');
     const backdrop = document.getElementById('mobileMenuBackdrop');
@@ -255,7 +360,7 @@
       const srcMap = await buildImageSrcMap(items);
 
       listEl.innerHTML = items.map((item) => `
-        <article class="grad-card"><div class="p-6 sm:p-7 post">
+        <article id="${item.id}" class="grad-card scroll-mt-24"><div class="p-6 sm:p-7 post">
           ${item.image ? `<img src="${srcMap[item.image]}" alt="" loading="lazy" decoding="async" class="w-full h-56 object-cover rounded-xl mb-4">` : ''}
           <p class="text-xs text-ink/40 font-semibold mb-2">${escapeHtml(formatDateHindi(item.date))}</p>
           <h2 class="font-heading text-xl sm:text-2xl text-ink mb-3">${escapeHtml(item.title)}</h2>
@@ -289,7 +394,15 @@
       }
     }
 
-    window.addEventListener('load', initNews);
+    async function initNewsAndScrollToHash() {
+      await initNews();
+      if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+      }
+    }
+
+    window.addEventListener('load', initNewsAndScrollToHash);
   })();
 </script>
 

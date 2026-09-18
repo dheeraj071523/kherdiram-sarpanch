@@ -78,6 +78,20 @@
       <p class="text-xs text-ink/40 mt-2">यह वही Token काम करेगा जो गतिविधियां-Admin में इस्तेमाल होता है (kherdiram-activities repo के लिए)।</p>
     </div></div>
 
+    <!-- Push notification key (optional) -->
+    <div class="grad-card mb-6"><div class="p-5">
+      <label for="onesignalKeyInput" class="block text-sm font-semibold mb-1.5">
+        <i class="fa-solid fa-bell text-crimson ml-1"></i> OneSignal REST API Key <span class="text-ink/40 font-normal">(वैकल्पिक — Push Notification के लिए)</span>
+      </label>
+      <input type="password" id="onesignalKeyInput" placeholder="os_v2_app_xxxxxxxxxxxxxxxxxxxx"
+        class="w-full rounded-xl border border-ink/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+      <label class="flex items-center gap-2 mt-2 text-sm text-ink/60">
+        <input type="checkbox" id="rememberOnesignalKey" class="rounded">
+        इस डिवाइस पर याद रखें
+      </label>
+      <p class="text-xs text-ink/40 mt-2">यही Key गतिविधियां-Admin में भी इस्तेमाल होती है। भरा हो तो नई खबर पोस्ट होते ही सबको push notification चली जाएगी।</p>
+    </div></div>
+
     <div class="grad-card mb-8"><div class="p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 id="formTitle" class="font-heading text-lg">नई समाचार पोस्ट जोड़ें</h2>
@@ -152,6 +166,9 @@
   const PURGE_BASE = `https://purge.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}`;
   const DATA_PATH = 'news/data.json';
 
+  // Push notifications (optional) — same App ID as index.html/admin-activities.html
+  const ONESIGNAL_APP_ID = '60feeba8-0b5b-4b00-a286-0c8628f36eba';
+
   let currentNews = [];
   let editingId = null;
   let editingOldImage = null;
@@ -166,12 +183,51 @@
     return val;
   }
 
+  function getOnesignalKey() {
+    const remember = document.getElementById('rememberOnesignalKey').checked;
+    const val = document.getElementById('onesignalKeyInput').value.trim();
+    try {
+      if (remember && val) localStorage.setItem('onesignal_key_kherdiram', val);
+      if (!remember) localStorage.removeItem('onesignal_key_kherdiram');
+    } catch (e) { /* private mode etc. */ }
+    return val;
+  }
+
+  async function sendPushNotification({ title, body, url }) {
+    const apiKey = getOnesignalKey();
+    if (!apiKey || ONESIGNAL_APP_ID.includes('YOUR_')) return;
+    try {
+      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': `Basic ${apiKey}`
+        },
+        body: JSON.stringify({
+          app_id: ONESIGNAL_APP_ID,
+          included_segments: ['Subscribed Users'],
+          headings: { en: title, hi: title },
+          contents: { en: body, hi: body },
+          url: url
+        })
+      });
+      if (!res.ok) console.warn('Push notification not sent, status:', res.status);
+    } catch (e) {
+      console.warn('Push notification failed:', e);
+    }
+  }
+
   window.addEventListener('load', () => {
     try {
       const saved = localStorage.getItem('gh_pat_kherdiram');
       if (saved) {
         document.getElementById('tokenInput').value = saved;
         document.getElementById('rememberToken').checked = true;
+      }
+      const savedKey = localStorage.getItem('onesignal_key_kherdiram');
+      if (savedKey) {
+        document.getElementById('onesignalKeyInput').value = savedKey;
+        document.getElementById('rememberOnesignalKey').checked = true;
       }
     } catch (e) { /* private mode etc. */ }
     loadNews();
@@ -378,13 +434,15 @@
         }
       }
 
+      let newPostId = null;
       if (editingId) {
         const idx = data.items.findIndex((i) => i.id === editingId);
         if (idx === -1) throw new Error('यह पोस्ट अब मौजूद नहीं है — शायद पहले ही हट चुकी है');
         data.items[idx] = { ...data.items[idx], title, content, date, image: imagePath || '' };
       } else {
         const timestamp = Date.now();
-        data.items.push({ id: 'news_' + timestamp, title, content, date, image: imagePath || '', timestamp });
+        newPostId = 'news_' + timestamp;
+        data.items.push({ id: newPostId, title, content, date, image: imagePath || '', timestamp });
       }
       data.updatedAt = new Date().toISOString();
       upserts.push({ path: DATA_PATH, base64Content: utf8ToBase64(JSON.stringify(data, null, 2)) });
@@ -394,6 +452,16 @@
         : `नई समाचार पोस्ट जोड़ी: ${title.slice(0, 40)}`;
       await commitFiles(token, commitMsg, { upserts, deletePaths });
       await purgeJsDelivr(DATA_PATH);
+
+      if (newPostId) {
+        // Fire-and-forget — never let a push-notification hiccup block the
+        // "saved successfully" confirmation, since the content is already live.
+        sendPushNotification({
+          title: 'नई खबर',
+          body: title,
+          url: `news-updates.html#${newPostId}`
+        });
+      }
 
       statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।';
       statusEl.className = 'text-sm text-center text-leaf-dark font-medium';

@@ -4,7 +4,14 @@
 // even on weak/no internet connection in the village.
 // ============================================================
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v6";
+// Merges OneSignal's push-notification handling (receiving pushes, showing
+// them, handling clicks/deep-links) into this SAME service worker, instead
+// of using a separate OneSignalSDKWorker.js file — this is OneSignal's
+// documented approach for sites that already have their own service worker.
+// Must stay as one of the very first lines in this file.
+importScripts("https://cdn.onesignal.com/sdks/OneSignalSDKWorker.js");
+
+const CACHE_NAME = "kherdiram-sarpanch-cache-v7";
 
 // Bump CACHE_NAME (e.g. -v7) whenever you update any of the STATIC SITE files
 // listed below (index.html, about.html, sw.js itself, images, icons, etc.) so

@@ -90,6 +90,20 @@
       <p class="text-xs text-ink/40 mt-2">Token कैसे बनाएं — README-hosting-guide.md में स्टेप्स हैं।</p>
     </div></div>
 
+    <!-- Push notification key (optional) -->
+    <div class="grad-card mb-6"><div class="p-5">
+      <label for="onesignalKeyInput" class="block text-sm font-semibold mb-1.5">
+        <i class="fa-solid fa-bell text-crimson ml-1"></i> OneSignal REST API Key <span class="text-ink/40 font-normal">(वैकल्पिक — Push Notification के लिए)</span>
+      </label>
+      <input type="password" id="onesignalKeyInput" placeholder="os_v2_app_xxxxxxxxxxxxxxxxxxxx"
+        class="w-full rounded-xl border border-ink/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+      <label class="flex items-center gap-2 mt-2 text-sm text-ink/60">
+        <input type="checkbox" id="rememberOnesignalKey" class="rounded">
+        इस डिवाइस पर याद रखें
+      </label>
+      <p class="text-xs text-ink/40 mt-2">यह भरा हो तो नई गतिविधि जोड़ते ही सबको अपने आप push notification चली जाएगी। खाली छोड़ दें तो सिर्फ साइट पर अपडेट होगा, notification नहीं जाएगी।</p>
+    </div></div>
+
     <!-- Add / Edit form -->
     <div class="grad-card mb-8"><div class="p-5">
       <div class="flex items-center justify-between mb-4">
@@ -169,6 +183,10 @@
   const RAW_BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
   const PURGE_BASE = `https://purge.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}`;
 
+  // Push notifications (optional) — replace with your real OneSignal App ID
+  // (same value as in index.html). Not secret, safe to leave visible here.
+  const ONESIGNAL_APP_ID = '60feeba8-0b5b-4b00-a286-0c8628f36eba';
+
   let currentActivities = [];   // last loaded list, used for edit lookups
   let editingId = null;         // null = add mode, otherwise editing this item's id
   let editingOldImage = null;   // image path to remove if replaced during edit
@@ -184,12 +202,54 @@
     return val;
   }
 
+  function getOnesignalKey() {
+    const remember = document.getElementById('rememberOnesignalKey').checked;
+    const val = document.getElementById('onesignalKeyInput').value.trim();
+    try {
+      if (remember && val) localStorage.setItem('onesignal_key_kherdiram', val);
+      if (!remember) localStorage.removeItem('onesignal_key_kherdiram');
+    } catch (e) { /* private mode etc. */ }
+    return val;
+  }
+
+  // Sends a push notification to everyone subscribed on the site. Silently
+  // does nothing if no key is set — push notifications are optional, never
+  // block the actual content upload if this fails or isn't configured.
+  async function sendPushNotification({ title, body, url }) {
+    const apiKey = getOnesignalKey();
+    if (!apiKey || ONESIGNAL_APP_ID.includes('YOUR_')) return;
+    try {
+      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': `Basic ${apiKey}`
+        },
+        body: JSON.stringify({
+          app_id: ONESIGNAL_APP_ID,
+          included_segments: ['Subscribed Users'],
+          headings: { en: title, hi: title },
+          contents: { en: body, hi: body },
+          url: url
+        })
+      });
+      if (!res.ok) console.warn('Push notification not sent, status:', res.status);
+    } catch (e) {
+      console.warn('Push notification failed:', e);
+    }
+  }
+
   window.addEventListener('load', () => {
     try {
       const saved = localStorage.getItem('gh_pat_kherdiram');
       if (saved) {
         document.getElementById('tokenInput').value = saved;
         document.getElementById('rememberToken').checked = true;
+      }
+      const savedKey = localStorage.getItem('onesignal_key_kherdiram');
+      if (savedKey) {
+        document.getElementById('onesignalKeyInput').value = savedKey;
+        document.getElementById('rememberOnesignalKey').checked = true;
       }
     } catch (e) { /* private mode etc. */ }
     loadActivities();
@@ -440,8 +500,19 @@
       const commitMsg = editingId
         ? `गतिविधि अपडेट की: ${description.slice(0, 40)}`
         : `नई गतिविधि जोड़ी: ${description.slice(0, 40)}`;
+      const wasNewAdd = !editingId;
       await commitFiles(token, commitMsg, { upserts, deletePaths });
       await purgeJsDelivr('activities/data.json');
+
+      if (wasNewAdd) {
+        // Fire-and-forget — never let a push-notification hiccup block the
+        // "saved successfully" confirmation, since the content is already live.
+        sendPushNotification({
+          title: 'नई गतिविधि जुड़ी',
+          body: description,
+          url: 'index.html#gatividhiyan'
+        });
+      }
 
       statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।';
       statusEl.className = 'text-sm text-center text-leaf-dark font-medium';
