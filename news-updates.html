@@ -89,15 +89,33 @@
 </footer>
 
 <script>
-  // ---------- सूचनाएं (Notification Bell) — same feed as index.html ----------
+  // ---------- सूचनाएं (Notification Bell) ----------
+  // Builds a single "what's new" feed by merging गतिविधियां + समाचार (both
+  // already served free via jsDelivr from the content repo — no extra backend,
+  // no separate notification storage). "Seen" is tracked as a SET of item IDs
+  // in localStorage (not a single timestamp threshold) — this is deliberately
+  // more robust than an earlier version that stored just "the newest seen
+  // timestamp": that approach broke in two ways — (1) opening the bell before
+  // the feed had finished loading could store an invalid timestamp and
+  // silently reset everything to "unseen" forever, and (2) a user who arrives
+  // by tapping an OS push notification directly (never opening our in-site
+  // bell UI at all) never got that specific item marked as seen, so the badge
+  // stayed stuck showing it as unread indefinitely. The fixes: an ID-set
+  // instead of a fragile timestamp, and an on-load check that marks the
+  // relevant item(s) seen automatically when the page is opened via a
+  // notification's own deep-link (matching URL hash). Also mirrors the
+  // unseen count onto the installed app's home-screen icon via the Badging
+  // API (Chrome/Edge, installed PWAs) — a free, standard web platform
+  // feature, unrelated to OneSignal.
   (function () {
     const OWNER = 'dheeraj071523';
     const REPO = 'kherdiram-activities';
     const BRANCH = 'main';
     const ACTIVITIES_URL = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/activities/data.json`;
     const NEWS_URL = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/news/data.json`;
-    const LAST_SEEN_KEY = 'kherdiramNotifLastSeen';
+    const SEEN_IDS_KEY = 'kherdiramNotifSeenIds';
     const HINDI_MONTHS = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+
     let mergedFeed = [];
 
     function escapeHtml(str) {
@@ -112,11 +130,26 @@
       if (!y || !m || !d) return dateStr;
       return `${d} ${HINDI_MONTHS[m - 1]} ${y}`;
     }
-    function getLastSeen() {
-      try { return Number(localStorage.getItem(LAST_SEEN_KEY)) || 0; } catch (e) { return 0; }
+    function getSeenIds() {
+      try { return new Set(JSON.parse(localStorage.getItem(SEEN_IDS_KEY) || '[]')); }
+      catch (e) { return new Set(); }
     }
-    function setLastSeen(ts) {
-      try { localStorage.setItem(LAST_SEEN_KEY, String(ts)); } catch (e) { /* private mode etc. */ }
+    function saveSeenIds(set) {
+      try {
+        // Keep this from growing forever — only remember IDs that still exist in the feed
+        const stillRelevant = [...set].filter((id) => mergedFeed.some((n) => n.id === id));
+        localStorage.setItem(SEEN_IDS_KEY, JSON.stringify(stillRelevant));
+      } catch (e) { /* private mode etc. */ }
+    }
+    function markSeen(id) {
+      const set = getSeenIds();
+      set.add(id);
+      saveSeenIds(set);
+    }
+    function markAllSeen() {
+      const set = getSeenIds();
+      mergedFeed.forEach((n) => set.add(n.id));
+      saveSeenIds(set);
     }
     function updateAppBadge(count) {
       if (!('setAppBadge' in navigator)) return;
@@ -130,6 +163,7 @@
         return await res.json();
       } catch (e) { return null; }
     }
+
     async function loadFeed() {
       const [activities, news] = await Promise.all([fetchJson(ACTIVITIES_URL), fetchJson(NEWS_URL)]);
       const activityItems = (activities?.items || []).map((i) => ({
@@ -139,17 +173,32 @@
         type: 'news', id: i.id, title: 'नई खबर', text: i.title || '', date: i.date, timestamp: i.timestamp || 0
       }));
       mergedFeed = [...activityItems, ...newsItems].sort((a, b) => b.timestamp - a.timestamp).slice(0, 30);
+
+      // Arrived here via a notification's own deep-link? Mark the relevant
+      // item(s) seen right away, even though the in-site bell was never opened.
+      const hash = window.location.hash;
+      if (hash === '#gatividhiyan') {
+        const set = getSeenIds();
+        mergedFeed.filter((n) => n.type === 'activity').forEach((n) => set.add(n.id));
+        saveSeenIds(set);
+      } else if (hash && hash.length > 1) {
+        const matchId = hash.slice(1);
+        if (mergedFeed.some((n) => n.id === matchId)) markSeen(matchId);
+      }
+
       renderBell();
     }
+
     function renderBell() {
-      const lastSeen = getLastSeen();
-      const unseenCount = mergedFeed.filter((n) => n.timestamp > lastSeen).length;
+      const seenIds = getSeenIds();
+      const unseenCount = mergedFeed.filter((n) => !seenIds.has(n.id)).length;
       const badge = document.getElementById('notifBellBadge');
       if (badge) {
         if (unseenCount > 0) { badge.textContent = unseenCount > 9 ? '9+' : String(unseenCount); badge.classList.remove('hidden'); }
         else { badge.classList.add('hidden'); }
       }
       updateAppBadge(unseenCount);
+
       const listEl = document.getElementById('notifBellList');
       if (!listEl) return;
       if (mergedFeed.length === 0) {
@@ -157,12 +206,13 @@
         return;
       }
       listEl.innerHTML = mergedFeed.map((n) => {
-        const isUnseen = n.timestamp > lastSeen;
+        const isUnseen = !seenIds.has(n.id);
         const icon = n.type === 'activity' ? 'fa-images' : 'fa-newspaper';
         const iconColor = n.type === 'activity' ? 'from-crimson to-gold' : 'from-leaf to-leaf-dark';
-        const targetHref = n.type === 'activity' ? 'index.html#gatividhiyan' : `news-updates.html#${n.id}`;
+        const targetHref = n.type === 'activity' ? '#gatividhiyan' : `news-updates.html#${n.id}`;
+        const isCrossPage = n.type !== 'activity';
         return `
-        <a href="${targetHref}"
+        <a href="${targetHref}" ${isCrossPage ? '' : 'onclick="closeNotifBell()"'}
           class="flex items-start gap-3 p-4 border-b border-ink/5 hover:bg-ink/[0.02] transition-colors ${isUnseen ? 'bg-gold/5' : ''}">
           <span class="w-9 h-9 rounded-xl bg-gradient-to-br ${iconColor} text-white flex items-center justify-center flex-shrink-0 mt-0.5">
             <i class="fa-solid ${icon} text-sm"></i>
@@ -175,22 +225,27 @@
         </a>`;
       }).join('');
     }
+
     window.toggleNotifBell = function () {
       const panel = document.getElementById('notifBellPanel');
       if (panel.classList.contains('hidden')) openNotifBell();
       else closeNotifBell();
     };
+
     window.openNotifBell = function () {
       document.getElementById('notifBellPanel')?.classList.remove('hidden');
       document.getElementById('notifBellBackdrop')?.classList.remove('hidden');
       document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'true');
-      if (mergedFeed.length > 0) { setLastSeen(mergedFeed[0].timestamp); renderBell(); }
+      markAllSeen();
+      renderBell();
     };
+
     window.closeNotifBell = function () {
       document.getElementById('notifBellPanel')?.classList.add('hidden');
       document.getElementById('notifBellBackdrop')?.classList.add('hidden');
       document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
     };
+
     window.addEventListener('load', loadFeed);
   })();
 

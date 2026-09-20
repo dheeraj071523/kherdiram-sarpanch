@@ -319,17 +319,10 @@
   async function commitFiles(token, message, { upserts = [], deletePaths = [] }) {
     const h = { ...authHeaders(token), 'Content-Type': 'application/json' };
 
-    const refRes = await fetch(`${API_ROOT}/git/ref/heads/${BRANCH}`, { headers: authHeaders(token) });
-    if (!refRes.ok) throw new Error('branch जानकारी नहीं मिली (टोकन की permission जांचें)');
-    const refJson = await refRes.json();
-    const latestCommitSha = refJson.object.sha;
-
-    const commitRes = await fetch(`${API_ROOT}/git/commits/${latestCommitSha}`, { headers: authHeaders(token) });
-    if (!commitRes.ok) throw new Error('मौजूदा commit नहीं मिला');
-    const commitJson = await commitRes.json();
-    const baseTreeSha = commitJson.tree.sha;
-
-    const treeEntries = [];
+    // Blobs (raw file content) don't depend on the branch's current state,
+    // so they only ever need to be created once, even if we have to retry
+    // the tree/commit/ref-update steps below.
+    const uploadedBlobs = [];
     for (const file of upserts) {
       const blobRes = await fetch(`${API_ROOT}/git/blobs`, {
         method: 'POST', headers: h,
@@ -337,33 +330,59 @@
       });
       if (!blobRes.ok) throw new Error('फाइल तैयार नहीं हो पाई: ' + file.path);
       const blobJson = await blobRes.json();
-      treeEntries.push({ path: file.path, mode: '100644', type: 'blob', sha: blobJson.sha });
-    }
-    for (const path of deletePaths) {
-      treeEntries.push({ path, mode: '100644', type: 'blob', sha: null });
+      uploadedBlobs.push({ path: file.path, sha: blobJson.sha });
     }
 
-    const treeRes = await fetch(`${API_ROOT}/git/trees`, {
-      method: 'POST', headers: h,
-      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
-    });
-    if (!treeRes.ok) throw new Error('बदलाव तैयार नहीं हो पाए');
-    const treeJson = await treeRes.json();
+    async function attempt() {
+      const refRes = await fetch(`${API_ROOT}/git/ref/heads/${BRANCH}`, { headers: authHeaders(token) });
+      if (!refRes.ok) throw new Error('branch जानकारी नहीं मिली (टोकन की permission जांचें)');
+      const refJson = await refRes.json();
+      const latestCommitSha = refJson.object.sha;
 
-    const newCommitRes = await fetch(`${API_ROOT}/git/commits`, {
-      method: 'POST', headers: h,
-      body: JSON.stringify({ message, tree: treeJson.sha, parents: [latestCommitSha] })
-    });
-    if (!newCommitRes.ok) throw new Error('commit नहीं बन पाई');
-    const newCommitJson = await newCommitRes.json();
+      const commitRes = await fetch(`${API_ROOT}/git/commits/${latestCommitSha}`, { headers: authHeaders(token) });
+      if (!commitRes.ok) throw new Error('मौजूदा commit नहीं मिला');
+      const commitJson = await commitRes.json();
+      const baseTreeSha = commitJson.tree.sha;
 
-    const updateRefRes = await fetch(`${API_ROOT}/git/refs/heads/${BRANCH}`, {
-      method: 'PATCH', headers: h,
-      body: JSON.stringify({ sha: newCommitJson.sha })
-    });
-    if (!updateRefRes.ok) throw new Error('repo अपडेट नहीं हो पाई');
+      const treeEntries = uploadedBlobs.map((b) => ({ path: b.path, mode: '100644', type: 'blob', sha: b.sha }));
+      for (const path of deletePaths) {
+        treeEntries.push({ path, mode: '100644', type: 'blob', sha: null });
+      }
 
-    return newCommitJson.sha;
+      const treeRes = await fetch(`${API_ROOT}/git/trees`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+      });
+      if (!treeRes.ok) throw new Error('बदलाव तैयार नहीं हो पाए');
+      const treeJson = await treeRes.json();
+
+      const newCommitRes = await fetch(`${API_ROOT}/git/commits`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({ message, tree: treeJson.sha, parents: [latestCommitSha] })
+      });
+      if (!newCommitRes.ok) throw new Error('commit नहीं बन पाई');
+      const newCommitJson = await newCommitRes.json();
+
+      const updateRefRes = await fetch(`${API_ROOT}/git/refs/heads/${BRANCH}`, {
+        method: 'PATCH', headers: h,
+        body: JSON.stringify({ sha: newCommitJson.sha })
+      });
+      return { ok: updateRefRes.ok, status: updateRefRes.status, sha: newCommitJson.sha };
+    }
+
+    let result = await attempt();
+    if (!result.ok && result.status === 422) {
+      // The branch moved between our read and write (e.g. a near-simultaneous
+      // second submission, common on mobile due to touch/network timing) —
+      // this is a plain race, not a real failure. Re-read the now-current
+      // branch state and try the whole tree/commit/ref-update sequence again
+      // with the same already-uploaded file blobs, once.
+      console.warn('Ref update hit a race (422) — retrying once against the latest branch state.');
+      result = await attempt();
+    }
+    if (!result.ok) throw new Error('repo अपडेट नहीं हो पाई (status ' + result.status + ')');
+
+    return result.sha;
   }
 
   async function purgeJsDelivr(path) {
@@ -429,8 +448,13 @@
     document.getElementById('addStatus').textContent = '';
   }
 
+  let isSubmittingActivity = false; // hard guard against double-submit races (mobile touch lag)
+
   async function handleSubmitActivity(e) {
     e.preventDefault();
+    if (isSubmittingActivity) return; // a submission is already in flight — ignore this one entirely
+    isSubmittingActivity = true;
+
     const statusEl = document.getElementById('addStatus');
     const submitBtn = document.getElementById('submitBtn');
     statusEl.textContent = '';
@@ -439,6 +463,7 @@
     if (!token) {
       statusEl.textContent = '⚠️ पहले अपना GitHub Token डालें।';
       statusEl.className = 'text-sm text-center text-crimson';
+      isSubmittingActivity = false;
       return;
     }
 
@@ -451,6 +476,7 @@
     if (!description || !date || !time24 || (!editingId && !newFile)) {
       statusEl.textContent = '⚠️ फोटो, विवरण, तारीख़ और समय — सभी भरें।';
       statusEl.className = 'text-sm text-center text-crimson';
+      isSubmittingActivity = false;
       return;
     }
 
@@ -524,6 +550,7 @@
     } finally {
       submitBtn.disabled = false;
       submitBtn.querySelector('span').textContent = editingId ? 'अपडेट करें' : 'गतिविधि जोड़ें';
+      isSubmittingActivity = false;
     }
   }
 
