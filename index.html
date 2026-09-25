@@ -106,6 +106,7 @@
     try {
       await OneSignal.init({
         appId: "60feeba8-0b5b-4b00-a286-0c8628f36eba",
+        safari_web_id: "web.onesignal.auto.4b99c5db-a7c9-461a-8333-facb0838095d",
         serviceWorkerParam: { scope: "/" },
         serviceWorkerPath: "sw.js",
         notifyButton: { enable: false }, // using our own custom bell icon instead
@@ -1370,10 +1371,20 @@
     // The new service worker calls skipWaiting()/clients.claim(), so once it
     // takes control, reload once to make sure this tab is served by it too —
     // otherwise an already-open tab can keep running the old cached version.
-    let swRefreshed = false;
+    // IMPORTANT: the guard below uses sessionStorage (survives a reload),
+    // not a plain JS variable (which resets on every reload). A plain
+    // variable only stops a *second* controllerchange within the same
+    // page load — if the browser keeps reporting a "new" controller on
+    // every fresh load (seen in practice on some devices/networks), a
+    // JS-variable guard lets the page reload → re-register → reload again,
+    // forever. sessionStorage persists across that reload, so this can
+    // never loop more than once per tab session, no matter how many times
+    // controllerchange fires. Do not revert to a plain variable here.
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (swRefreshed) return;
-      swRefreshed = true;
+      let alreadyReloaded = false;
+      try { alreadyReloaded = sessionStorage.getItem('swReloaded') === '1'; } catch (e) { /* private mode etc. */ }
+      if (alreadyReloaded) return;
+      try { sessionStorage.setItem('swReloaded', '1'); } catch (e) { /* private mode etc. */ }
       window.location.reload();
     });
   }
