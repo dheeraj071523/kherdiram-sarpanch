@@ -11,11 +11,12 @@
 // Must stay as one of the very first lines in this file.
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
-const CACHE_NAME = "kherdiram-sarpanch-cache-v8";
+const CACHE_NAME = "kherdiram-sarpanch-cache-v9";
 
-// Bump CACHE_NAME (e.g. -v7) whenever you update any of the STATIC SITE files
-// listed below (index.html, about.html, sw.js itself, images, icons, etc.) so
-// returning visitors get the fresh copy instead of a stale cached one.
+// Bump CACHE_NAME (e.g. -v9 -> -v10) whenever you update any of the STATIC
+// SITE files listed below (index.html, about.html, sw.js itself, images,
+// icons, etc.) so returning visitors get the fresh copy instead of a stale
+// cached one.
 // You do NOT need to bump this for गतिविधियां/समाचार content updates — those
 // live in a separate repo and are served live via jsDelivr, never touching
 // this cache at all.
@@ -43,6 +44,38 @@ const PRECACHE_URLS = [
 // admin tools for every regular visitor, so they only get cached if/when
 // someone actually opens them.
 
+// ---------- Helper: never store a "redirected" Response ----------
+// Some hosts occasionally answer a request (very often the bare "./" root
+// URL) with a redirect (e.g. a 301/308 to the canonical URL, or an
+// http->https / trailing-slash normalisation at the edge) before finally
+// returning the real page. fetch() follows that redirect and hands back a
+// Response whose `.redirected` flag is `true`.
+//
+// That is completely fine to show once, live — but if that exact Response
+// object is stored in the Cache and later replayed via caches.match() to
+// satisfy a *navigation* FetchEvent (i.e. exactly what happens when the
+// phone is offline and this file's fallback chain kicks in), Chrome
+// refuses it and throws:
+//   "The FetchEvent ... resulted in a network error response: a redirected
+//    response was used for a request whose redirect mode is not 'follow'."
+// When event.respondWith() receives that rejected promise, the browser
+// shows its OWN native "This site can't be reached" error page instead of
+// our offline.html — this is exactly the bug that made the offline page
+// look fine at night (while online, the live network response is always
+// used first) but broke every morning (offline, so the bad cached/
+// redirected response from the previous precache/update was finally
+// served). Rebuilding a plain, non-redirected Response before ever
+// caching it avoids this entirely.
+async function toCacheableResponse(response) {
+  if (!response || !response.redirected) return response;
+  const body = await response.clone().blob();
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers
+  });
+}
+
 // ---------- INSTALL: pre-cache core files ----------
 // IMPORTANT: each file is cached with its OWN try/catch, on purpose — a
 // single cache.addAll(PRECACHE_URLS) call is all-or-nothing: if even one
@@ -51,15 +84,23 @@ const PRECACHE_URLS = [
 // NOTHING gets cached — which is exactly what caused only manually-visited
 // pages to work offline, instead of the whole site as intended. Caching
 // files one at a time means one failure can never take the others down.
+//
+// We also fetch() manually here (instead of cache.add(), which cannot be
+// intercepted) so every precached file passes through toCacheableResponse()
+// and can never enter the cache as a redirected Response — see the comment
+// above.
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) =>
         Promise.all(
           PRECACHE_URLS.map((url) =>
-            cache.add(url).catch((err) => {
-              console.warn("Precache failed for", url, err);
-            })
+            fetch(url, { redirect: "follow" })
+              .then((res) => toCacheableResponse(res))
+              .then((res) => cache.put(url, res))
+              .catch((err) => {
+                console.warn("Precache failed for", url, err);
+              })
           )
         )
       )
@@ -109,9 +150,9 @@ self.addEventListener("fetch", (event) => {
     // instead of anything we control).
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+        .then(async (response) => {
+          const cacheable = await toCacheableResponse(response.clone());
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cacheable));
           return response;
         })
         .catch(async () => {
@@ -142,9 +183,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+        return fetch(request).then(async (response) => {
+          const cacheable = await toCacheableResponse(response.clone());
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cacheable));
           return response;
         }).catch(() => cached || new Response("", { status: 504, statusText: "Offline" }));
       })
