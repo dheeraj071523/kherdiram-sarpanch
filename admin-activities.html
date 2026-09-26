@@ -217,13 +217,19 @@
   // block the actual content upload if this fails or isn't configured.
   async function sendPushNotification({ title, body, url }) {
     const apiKey = getOnesignalKey();
-    if (!apiKey || ONESIGNAL_APP_ID.includes('YOUR_')) return;
+    if (!apiKey || ONESIGNAL_APP_ID.includes('YOUR_')) return { attempted: false };
     try {
-      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+      // BUG FIX: was calling the old https://onesignal.com/api/v1/notifications
+      // endpoint with "Authorization: Basic <key>" — that's OneSignal's old REST
+      // API key format. Current keys ("os_v2_app_..." format) need the current
+      // endpoint and "Authorization: Key <key>" instead — with the old format
+      // this failed silently every time (console.warn only), so activities
+      // saved fine but never actually triggered a push.
+      const res = await fetch('https://api.onesignal.com/notifications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': `Basic ${apiKey}`
+          'Authorization': `Key ${apiKey}`
         },
         body: JSON.stringify({
           app_id: ONESIGNAL_APP_ID,
@@ -233,9 +239,15 @@
           url: url
         })
       });
-      if (!res.ok) console.warn('Push notification not sent, status:', res.status);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.warn('Push notification not sent, status:', res.status, json);
+        return { attempted: true, ok: false, status: res.status, error: (json.errors || []).join(', ') };
+      }
+      return { attempted: true, ok: true, id: json.id };
     } catch (e) {
       console.warn('Push notification failed:', e);
+      return { attempted: true, ok: false, error: e.message };
     }
   }
 
@@ -376,9 +388,15 @@
       // second submission, common on mobile due to touch/network timing) —
       // this is a plain race, not a real failure. Re-read the now-current
       // branch state and try the whole tree/commit/ref-update sequence again
-      // with the same already-uploaded file blobs, once.
-      console.warn('Ref update hit a race (422) — retrying once against the latest branch state.');
+      // with the same already-uploaded file blobs. Two retries (not just one)
+      // since mobile networks/duplicate touch events can occasionally race
+      // through a single retry too.
+      console.warn('Ref update hit a race (422) — retrying against the latest branch state.');
       result = await attempt();
+      if (!result.ok && result.status === 422) {
+        console.warn('Ref update hit a race (422) again — retrying once more.');
+        result = await attempt();
+      }
     }
     if (!result.ok) throw new Error('repo अपडेट नहीं हो पाई (status ' + result.status + ')');
 
@@ -530,17 +548,21 @@
       await commitFiles(token, commitMsg, { upserts, deletePaths });
       await purgeJsDelivr('activities/data.json');
 
+      let pushResult = { attempted: false };
       if (wasNewAdd) {
-        // Fire-and-forget — never let a push-notification hiccup block the
-        // "saved successfully" confirmation, since the content is already live.
-        sendPushNotification({
+        // Still fire-and-forget for the SAVE confirmation, but now wait for
+        // and show the push result too, instead of swallowing failures silently.
+        pushResult = await sendPushNotification({
           title: 'नई गतिविधि जुड़ी',
           body: description,
           url: 'index.html#gatividhiyan'
         });
       }
 
-      statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।';
+      statusEl.textContent = '✅ सफलतापूर्वक सेव हुआ! साइट पर कुछ ही मिनट में दिख जाएगा।'
+        + (pushResult.attempted
+            ? (pushResult.ok ? ' 🔔 Push notification भी भेज दी गई।' : ' ⚠️ लेकिन push notification नहीं भेजी जा सकी: ' + (pushResult.error || ('स्टेटस ' + pushResult.status)))
+            : '');
       statusEl.className = 'text-sm text-center text-leaf-dark font-medium';
       cancelEdit();
       loadActivities();
@@ -588,10 +610,15 @@
     }
   }
 
+  let isDeletingActivity = false; // same double-fire guard as add/edit — mobile touch can fire this twice
+
   async function handleDeleteActivity(id) {
     const token = getToken();
     if (!token) { alert('पहले GitHub Token डालें।'); return; }
     if (!confirm('क्या आप वाकई इस गतिविधि को हटाना चाहते हैं?')) return;
+
+    if (isDeletingActivity) return;
+    isDeletingActivity = true;
 
     try {
       const data = await readJsonFile(token);
@@ -608,6 +635,8 @@
       loadActivities();
     } catch (err) {
       alert('हटाने में समस्या: ' + err.message);
+    } finally {
+      isDeletingActivity = false;
     }
   }
 

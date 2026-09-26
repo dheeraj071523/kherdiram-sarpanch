@@ -1205,11 +1205,19 @@
 
       const listEl = document.getElementById('notifBellList');
       if (!listEl) return;
-      if (mergedFeed.length === 0) {
+      // BUG FIX: this used to render mergedFeed.map(...) directly, so every
+      // item stayed in the list forever (only its unread dot/highlight went
+      // away once opened). Filtering out already-seen items here means a
+      // notification you've already opened once is gone from the list the
+      // NEXT time you open the bell — items marked seen are only removed
+      // from closeNotifBell(), so anything visible right now stays visible
+      // for the rest of this viewing.
+      const visibleFeed = mergedFeed.filter((n) => !seenIds.has(n.id));
+      if (visibleFeed.length === 0) {
         listEl.innerHTML = '<p class="text-center text-ink/40 text-sm py-8">अभी कोई सूचना नहीं है।</p>';
         return;
       }
-      listEl.innerHTML = mergedFeed.map((n) => {
+      listEl.innerHTML = visibleFeed.map((n) => {
         const isUnseen = !seenIds.has(n.id);
         const icon = n.type === 'activity' ? 'fa-images' : 'fa-newspaper';
         const iconColor = n.type === 'activity' ? 'from-crimson to-gold' : 'from-leaf to-leaf-dark';
@@ -1247,7 +1255,12 @@
       document.getElementById('notifBellPanel')?.classList.remove('hidden');
       document.getElementById('notifBellBackdrop')?.classList.remove('hidden');
       document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'true');
-      markAllSeen();
+      // BUG FIX: this used to call markAllSeen() immediately on open, which
+      // is fine for the badge count but, combined with the render fix above,
+      // would have made every item vanish the INSTANT the panel opened
+      // (before it could even be read). Marking seen now happens on close
+      // instead (below), so items stay visible for this whole viewing and
+      // only disappear the next time the bell is opened.
       renderBell();
     };
 
@@ -1255,6 +1268,7 @@
       document.getElementById('notifBellPanel')?.classList.add('hidden');
       document.getElementById('notifBellBackdrop')?.classList.add('hidden');
       document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
+      markAllSeen();
     };
 
     window.addEventListener('load', loadFeed);
