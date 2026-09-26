@@ -112,10 +112,42 @@
         notifyButton: { enable: false }, // using our own custom bell icon instead
         allowLocalhostAsSecureOrigin: true
       });
+
+      // BUG FIX: notifyButton is disabled above (we use our own bell icon
+      // instead), but nothing was ever actually calling OneSignal to ask
+      // the visitor for push permission — so the subscribe prompt never
+      // appeared for anyone, on any device. Fix: show OneSignal's own
+      // friendly slide-down "Allow notifications?" banner a few seconds
+      // after the page loads, but only if the visitor hasn't already
+      // granted (or permanently blocked) notifications.
+      window.__promptedForPush = false;
+      setTimeout(function () {
+        if (window.__promptedForPush) return;
+        if (OneSignal.Notifications.permission === true) return; // already subscribed
+        window.__promptedForPush = true;
+        OneSignal.Slidedown.promptPush();
+      }, 4000);
     } catch (e) {
       console.warn('OneSignal init failed:', e);
     }
   });
+
+  // Lets our own bell icon (see toggleNotifBell below) also trigger the
+  // push-permission prompt on click, as a backup for visitors who dismissed
+  // or missed the automatic slide-down above.
+  window.__requestPushFromBell = function () {
+    if (!window.OneSignalDeferred) return;
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        window.__promptedForPush = true;
+        if (OneSignal.Notifications.permission !== true) {
+          await OneSignal.Notifications.requestPermission();
+        }
+      } catch (e) {
+        console.warn('Push permission request failed:', e);
+      }
+    });
+  };
 </script>
 
 <script>
@@ -1199,6 +1231,13 @@
     }
 
     window.toggleNotifBell = function () {
+      // BUG FIX: this bell was never actually asking OneSignal for push
+      // permission — it only opened the in-site announcements panel. Since
+      // this click is a real user gesture, it's also the safest place to
+      // ask for push permission if we haven't already.
+      if (typeof window.__requestPushFromBell === 'function') {
+        window.__requestPushFromBell();
+      }
       const panel = document.getElementById('notifBellPanel');
       if (panel.classList.contains('hidden')) openNotifBell();
       else closeNotifBell();
