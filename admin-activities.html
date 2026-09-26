@@ -345,6 +345,12 @@
       uploadedBlobs.push({ path: file.path, sha: blobJson.sha });
     }
 
+    // BUG FIX: this was capped at "initial + 2 retries", all fired back-to-back
+    // with zero delay, and on final failure it only ever showed the generic
+    // "status 422" — never GitHub's own error message, so there was no way to
+    // tell WHY it kept failing. Fix: capture GitHub's actual message, retry
+    // more times, and wait a little longer before each retry so a just-written
+    // ref has time to actually propagate before we re-read it.
     async function attempt() {
       const refRes = await fetch(`${API_ROOT}/git/ref/heads/${BRANCH}`, { headers: authHeaders(token) });
       if (!refRes.ok) throw new Error('branch जानकारी नहीं मिली (टोकन की permission जांचें)');
@@ -379,26 +385,25 @@
         method: 'PATCH', headers: h,
         body: JSON.stringify({ sha: newCommitJson.sha })
       });
-      return { ok: updateRefRes.ok, status: updateRefRes.status, sha: newCommitJson.sha };
+      let updateRefJson = null;
+      try { updateRefJson = await updateRefRes.json(); } catch (e) { /* empty body on success */ }
+      const ghMessage = updateRefJson && (updateRefJson.message || (Array.isArray(updateRefJson.errors) ? updateRefJson.errors.join(', ') : null));
+      return { ok: updateRefRes.ok, status: updateRefRes.status, sha: newCommitJson.sha, ghMessage };
     }
 
-    let result = await attempt();
-    if (!result.ok && result.status === 422) {
-      // The branch moved between our read and write (e.g. a near-simultaneous
-      // second submission, common on mobile due to touch/network timing) —
-      // this is a plain race, not a real failure. Re-read the now-current
-      // branch state and try the whole tree/commit/ref-update sequence again
-      // with the same already-uploaded file blobs. Two retries (not just one)
-      // since mobile networks/duplicate touch events can occasionally race
-      // through a single retry too.
-      console.warn('Ref update hit a race (422) — retrying against the latest branch state.');
+    const MAX_ATTEMPTS = 5; // initial try + up to 4 retries
+    let result = null;
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
       result = await attempt();
-      if (!result.ok && result.status === 422) {
-        console.warn('Ref update hit a race (422) again — retrying once more.');
-        result = await attempt();
-      }
+      if (result.ok) break;
+      if (result.status !== 422) break; // a different kind of error — retrying won't help
+      const waitMs = 500 * (i + 1); // 500ms, 1000ms, 1500ms, 2000ms — give GitHub time to catch up
+      console.warn(`Ref update hit a race (422) — retrying in ${waitMs}ms (attempt ${i + 2}/${MAX_ATTEMPTS}):`, result.ghMessage);
+      await new Promise((r) => setTimeout(r, waitMs));
     }
-    if (!result.ok) throw new Error('repo अपडेट नहीं हो पाई (status ' + result.status + ')');
+    if (!result.ok) {
+      throw new Error('repo अपडेट नहीं हो पाई (status ' + result.status + (result.ghMessage ? ' — ' + result.ghMessage : '') + ')');
+    }
 
     return result.sha;
   }
@@ -633,6 +638,10 @@
       await purgeJsDelivr('activities/data.json');
       if (editingId === id) cancelEdit();
       loadActivities();
+      // BUG FIX: delete never showed any confirmation at all on success — it
+      // just silently refreshed the list, so it looked like nothing happened
+      // even when it worked.
+      alert('✅ गतिविधि सफलतापूर्वक हटा दी गई।');
     } catch (err) {
       alert('हटाने में समस्या: ' + err.message);
     } finally {
